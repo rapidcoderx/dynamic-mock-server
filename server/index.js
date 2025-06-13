@@ -44,18 +44,30 @@ app.use((req, res, next) => {
 
     if (skipPaths.some(p => req.path.startsWith(p))) return next();
 
-    const mock = findMock({
+    const result = findMock({
         method: req.method,
         path: req.path,
         headers: req.headers
     }, mockStore);
 
-    if (mock) {
-        logger.info(`🎭 Matched mock for ${req.method} ${req.path}`);
+    if (result.found) {
+        const mock = result.mock;
+        const headerInfo = Object.keys(mock.headers || {}).length > 0 
+            ? ` (matched headers: ${JSON.stringify(mock.headers)})`
+            : '';
+        logger.info(`🎭 Matched mock "${mock.name}" for ${req.method} ${req.path}${headerInfo}`);
+        
+        // Set response headers if mock specifies them
+        if (mock.responseHeaders) {
+            Object.entries(mock.responseHeaders).forEach(([key, value]) => {
+                res.set(key, value);
+            });
+        }
+        
         return res.status(mock.statusCode || 200).json(mock.response);
     } else {
         logger.warn(`❌ No mock found for ${req.method} ${req.path}`);
-        return res.status(404).json({ error: 'No mock found for this request' });
+        return res.status(result.statusCode).json(result.response);
     }
 });
 

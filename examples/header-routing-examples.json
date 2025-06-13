@@ -1,0 +1,101 @@
+[
+  {
+    "name": "User API - Development Environment",
+    "method": "GET",
+    "path": "/api/users",
+    "headers": {
+      "x-environment": "dev"
+    },
+    "response": {
+      "users": [
+        {"id": 1, "name": "Dev User 1", "email": "dev1@example.com"},
+        {"id": 2, "name": "Dev User 2", "email": "dev2@example.com"}
+      ],
+      "environment": "development"
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "User API - Production Environment",
+    "method": "GET",
+    "path": "/api/users",
+    "headers": {
+      "x-environment": "prod"
+    },
+    "response": {
+      "users": [
+        {"id": 1, "name": "John Doe", "email": "john@company.com"},
+        {"id": 2, "name": "Jane Smith", "email": "jane@company.com"}
+      ],
+      "environment": "production"
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "User API - Default (No Headers)",
+    "method": "GET",
+    "path": "/api/users",
+    "headers": {},
+    "response": {
+      "users": [],
+      "message": "Please specify x-environment header (dev or prod)"
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "Auth API - Mobile Client",
+    "method": "POST",
+    "path": "/api/auth/login",
+    "headers": {
+      "x-client-type": "mobile"
+    },
+    "response": {
+      "token": "mobile-jwt-token-12345",
+      "expires_in": 3600,
+      "client_type": "mobile"
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "Auth API - Web Client",
+    "method": "POST",
+    "path": "/api/auth/login",
+    "headers": {
+      "x-client-type": "web"
+    },
+    "response": {
+      "token": "web-jwt-token-67890",
+      "expires_in": 1800,
+      "client_type": "web",
+      "csrf_token": "csrf-123-456"
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "API Version 1",
+    "method": "GET",
+    "path": "/api/data",
+    "headers": {
+      "x-api-version": "v1"
+    },
+    "response": {
+      "data": {"format": "legacy", "version": "1.0"},
+      "api_version": "v1"
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "API Version 2",
+    "method": "GET",
+    "path": "/api/data",
+    "headers": {
+      "x-api-version": "v2"
+    },
+    "response": {
+      "data": {"format": "modern", "version": "2.0"},
+      "metadata": {"api_version": "v2", "features": ["pagination", "filtering"]},
+      "links": {"self": "/api/data?version=v2"}
+    },
+    "statusCode": 200
+  }
+]

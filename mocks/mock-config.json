@@ -1,14 +1,15 @@
 [
   {
-    "id": "cddddeab-5141-4931-a6dc-971bb52cce94",
-    "name": "test-hello",
+    "id": "dc3dabee-4334-4e6f-8053-1bd7dc16000f",
+    "name": "test-hello-1",
     "method": "GET",
     "path": "/api/test-hello",
     "headers": {
-      "x-env": "dev"
+      "x-env": "dev",
+      "x-repeat": "yes"
     },
     "response": {
-      "message": "Hello from mock"
+      "message": "Hello from mock server"
     },
     "statusCode": 200
   }

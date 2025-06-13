@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
-    "ncu": "ncu -u"
+    "ncu": "ncu -u",
+    "build-css": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
+    "build-css-prod": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +24,10 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.1.10",
+    "autoprefixer": "^10.4.21",
     "nodemon": "^3.1.10",
-    "npm-check-updates": "^18.0.1"
+    "npm-check-updates": "^18.0.1",
+    "tailwindcss": "^4.1.10"
   }
 }
