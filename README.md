@@ -3,17 +3,18 @@
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Features](https://img.shields.io/badge/Features-Dynamic%20Values%20%26%20Delays-blue)
 ![UI](https://img.shields.io/badge/UI-Liquid%20Glass%20Theme-purple)
-![Integration](https://img.shields.io/badge/Export-JSON%20%7C%20Postman%20%7C%20HTTPie-orange)- **[🎲 Dynamic Values & Response Delays Guide](docs/DYNAMIC_VALUES_AND_DELAYS.md)** - Complete guide to dynamic value generation and sleep/delay functionality
-- **[📋 Dynamic Values Cheat Sheet](docs/DYNAMIC_VALUES_CHEAT_SHEET.md)** - Quick reference for placeholders and delays
-- **[🔗 Header Routing Guide](docs/HEADER_ROUTING.md)** - Advanced routing with headers
-- **[🗄️ Database Storage Guide](docs/DATABASE_STORAGE.md)** - PostgreSQL and MongoDB setup instructions
-- **[📁 Examples](examples/)** - Ready-to-use mock configurations and import filessleek, modern mock server with a liquid-glass UI and dynamic API capabilities. Configure and simulate API responses easily for local testing, demos, or prototyping – all with a beautiful frontend and modular backend.
+![Integration](https://img.shields.io/badge/Export-JSON%20%7C%20Postman%20%7C%20HTTPie-orange)
+![Storage](https://img.shields.io/badge/Storage-File%20%7C%20PostgreSQL%20%7C%20MongoDB-green)
+
+A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities. Configure and simulate API responses easily for local testing, demos, or prototyping – all with a beautiful frontend and modular backend.
 
 ## 🏆 Key Achievements
 
 **🎯 Production-Ready**: Complete CRUD operations, persistent storage, and robust error handling  
 **🎲 Dynamic & Intelligent**: 60+ Faker.js placeholders with realistic response delays  
-**🔄 Integration-Friendly**: Export to JSON, Postman collections, and HTTPie commands  
+**�️ Multi-Storage Support**: File, PostgreSQL, and MongoDB backends with automatic migration  
+**�🔄 Integration-Friendly**: Export to JSON, Postman collections, and HTTPie commands  
+**📡 API Collections**: Ready-to-use Postman, HTTPie Desktop, and CLI collections  
 **🎨 Modern UX**: Liquid glass UI with keyboard shortcuts and smart notifications  
 **📚 Well-Documented**: Comprehensive guides, examples, and API reference  
 
@@ -35,16 +36,33 @@
   - Response delays (fixed, random, network simulation)
   - Preview functionality for testing dynamic responses
   - 60+ built-in placeholder types across multiple categories
-- 📦 **Persistent Storage**: File-based mock storage (`mockStore.json`)
+- �️ **Multi-Storage Backend**:
+  - **File Storage**: JSON-based persistence (default)
+  - **PostgreSQL**: Enterprise SQL database with automatic schema management
+  - **MongoDB**: NoSQL document database with indexing
+  - Configurable via environment variables with automatic fallback
+  - Graceful migration between storage types
+- 📡 **API Collections & Integration**:
+  - **Postman Collection**: Complete collection with test scripts and examples
+  - **HTTPie Desktop**: Native collection for HTTPie Desktop GUI
+  - **HTTPie CLI**: Shell script with all commands and advanced examples
+  - **Interactive Demo**: Automated demo script showcasing all features
+  - Export/Import functionality for backup and migration
 - 👁️ **Rich UI Experience**: 
   - Modal-based mock viewer with full details
   - Smart notification system with contextual feedback
   - Responsive liquid glass theme using Tailwind CSS v4
-- 🔌 **Dynamic Configuration**: Config-driven `apiPrefix` support
+  - Keyboard shortcuts and intuitive navigation
+- 🔌 **Dynamic Configuration & Health**: 
+  - Config-driven `apiPrefix` support
+  - Health checks with storage backend status
+  - Environment-based configuration with .env support
+  - Graceful shutdown and error handling
 - 🛠️ **Developer Experience**: 
   - Comprehensive logging and request matching validation
   - Real-time mock conflict detection and analysis
-  - Keyboard shortcuts and intuitive navigation
+  - Advanced request analysis and testing endpoints
+  - Complete documentation with examples and guides
 - 🧩 **Modular Architecture**: Clean separation with `routes/`, `utils/`, and storage strategies
 
 ---
@@ -53,17 +71,19 @@
 
 ```
 /server
-  ├── index.js                # Entry point with Express server
+  ├── index.js                # Entry point with Express server & async storage init
   ├── logger.js               # Centralized logging system
   ├── security.js             # Security middleware
   ├── tracer.js               # Request tracing utilities
   └── routes/
-      └── mockRoutes.js       # Complete mock CRUD operations
+      └── mockRoutes.js       # Complete mock CRUD operations & export/import
 
 /utils
   ├── matcher.js              # Advanced mock matching logic
-  ├── storage.js              # Mock persistence utilities
-  └── storageStrategy.js      # File-based storage implementation
+  ├── storage.js              # File-based storage implementation
+  ├── storageStrategy.js      # Storage backend selector & initialization
+  ├── postgresStorage.js      # PostgreSQL storage backend
+  └── mongoStorage.js         # MongoDB storage backend
 
 /public
   ├── index.html              # Modern liquid glass frontend
@@ -81,11 +101,21 @@
   ├── HEADER_ROUTING.md       # Documentation for header-based routing
   ├── DYNAMIC_VALUES_AND_DELAYS.md  # Complete guide to dynamic values and delays
   ├── DYNAMIC_VALUES_CHEAT_SHEET.md # Quick reference for placeholders and delays
-  └── DATABASE_STORAGE.md     # Database storage configuration (PostgreSQL & MongoDB)
+  └── DATABASE_STORAGE.md     # Database storage setup & configuration guide
+
+/api-collections
+  ├── README.md               # API collections documentation
+  ├── Dynamic-Mock-Server.postman_collection.json    # Postman collection
+  ├── Dynamic-Mock-Server.httpie-desktop.json        # HTTPie Desktop collection
+  ├── httpie-commands.sh      # HTTPie CLI commands
+  └── demo.sh                 # Interactive demo script
 
 /examples
   ├── header-routing-examples.json  # Example configurations
   └── dynamic-values-examples.json  # Dynamic values and delay examples
+
+/.env.example                 # Environment configuration template
+/setup-database.sh           # Interactive database setup script
 ```
 
 ---
@@ -124,10 +154,15 @@ npm run setup-db
 ```
 
 **Manual Database Configuration**:
+```bash
+# Copy example configuration
+cp .env.example .env
+# Edit .env with your database settings
+```
 
 **PostgreSQL Storage**:
 ```bash
-# Set environment variables
+# Set environment variables in .env
 STORAGE_TYPE=postgres
 DATABASE_URL=postgresql://user:pass@localhost:5432/mock_server
 
@@ -198,26 +233,61 @@ See **[📡 API Collections](api-collections/)** for complete documentation.
 ### 6. Build & Development Commands
 
 ```bash
-# CSS Development (watch mode)
-npm run build-css
+# Development
+npm run dev                  # Start with nodemon (auto-restart)
+npm start                    # Production start
 
-# CSS Production (minified)
-npm run build-css-prod
+# Database Setup
+npm run setup-db             # Interactive database setup script
+./setup-database.sh          # Direct script execution
 
-# Run tests
-npm test
+# CSS Build
+npm run build-css            # CSS Development (watch mode)
+npm run build-css-prod       # CSS Production (minified)
+
+# Testing & Maintenance
+npm test                     # Run tests
+npm run ncu                  # Update dependencies with npm-check-updates
 ```
 
 ### 7. Environment Configuration
 
+Create a `.env` file (or copy from `.env.example`) to configure the server:
+
 ```bash
-# Optional environment variables (create .env file)
+# Server Configuration
 PORT=8080                    # Server port (default: 8080)
 API_PREFIX=/api              # API prefix for mock endpoints (default: /api)
 LOG_DEV_REQUESTS=false       # Show filtered dev tool requests in logs (default: false)
+
+# Storage Configuration
+STORAGE_TYPE=file            # Storage backend: file, postgres, mongodb (default: file)
+
+# PostgreSQL Configuration (when STORAGE_TYPE=postgres)
+DATABASE_URL=postgresql://user:password@localhost:5432/mock_server
+# OR individual components:
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=mock_user
+POSTGRES_PASSWORD=mock_password
+POSTGRES_DATABASE=mock_server
+
+# MongoDB Configuration (when STORAGE_TYPE=mongodb)
+MONGODB_URL=mongodb://localhost:27017/mock_server
+# OR individual components:
+MONGODB_HOST=localhost
+MONGODB_PORT=27017
+MONGODB_DATABASE=mock_server
+MONGODB_USERNAME=mock_user    # Optional
+MONGODB_PASSWORD=mock_password # Optional
 ```
 
-The server automatically filters out noisy development tool requests (Chrome DevTools, favicon requests, etc.) to keep logs clean. Set `LOG_DEV_REQUESTS=true` if you need to debug these requests.
+**Storage Backend Selection:**
+- **File Storage** (default): No additional setup required
+- **PostgreSQL**: Set `STORAGE_TYPE=postgres` and provide database connection details
+- **MongoDB**: Set `STORAGE_TYPE=mongodb` and provide database connection details
+
+The server automatically creates necessary tables/collections and handles graceful fallback to file storage if database connection fails.
 
 ---
 
@@ -404,6 +474,21 @@ Configure realistic network delays in Advanced Options:
 
 ## ✅ Recent Updates & Improvements
 
+### 🗄️ **Database Storage Integration** (Latest)
+- [x] **Multi-Backend Support**: Added PostgreSQL and MongoDB storage options
+- [x] **Environment Configuration**: Complete .env setup with automatic fallback
+- [x] **Schema Management**: Automatic table/collection creation and indexing
+- [x] **Migration Support**: Seamless switching between storage backends
+- [x] **Health Monitoring**: Database connection status in health endpoints
+- [x] **Interactive Setup**: Automated database setup script with validation
+
+### 📡 **API Collections & Integration** (Latest)
+- [x] **Postman Collection**: Complete collection with test scripts and examples
+- [x] **HTTPie Desktop**: Native collection for HTTPie Desktop GUI
+- [x] **HTTPie CLI Commands**: Comprehensive shell script with advanced examples
+- [x] **Interactive Demo**: Automated demo script showcasing all features
+- [x] **Export/Import**: Advanced backup and migration functionality
+
 ### 🎨 **UI/UX Enhancements**
 - [x] **Tailwind CSS v4 Compatibility**: Updated all opacity utilities to new v4 syntax
 - [x] **CSS Conflict Resolution**: Fixed conflicting `hidden` and `flex` classes
@@ -441,8 +526,18 @@ Configure realistic network delays in Advanced Options:
 - [x] **JSON Export/Import**: Complete mock collections with metadata
 - [x] **Postman Integration**: Auto-generate Postman collections from saved mocks
 - [x] **HTTPie Commands**: Generate corresponding HTTPie test commands
+- [x] **HTTPie Desktop**: Native HTTPie Desktop collection format
+- [x] **Interactive Demo**: Comprehensive demo script with all operations
 - [x] **File Upload**: Drag-and-drop or file selector import
 - [x] **JSON Paste**: Direct JSON import via textarea
+
+### 📡 **API Collections**
+- [x] **Postman Collection**: Complete v2.1 collection with test scripts and examples
+- [x] **HTTPie Desktop Collection**: Native format for HTTPie Desktop GUI
+- [x] **HTTPie CLI Commands**: Shell script with 50+ command examples
+- [x] **Demo Script**: Interactive demonstration of all features
+- [x] **Environment Variables**: Pre-configured variables for all collections
+- [x] **Documentation**: Comprehensive usage guides and troubleshooting
 
 ### 🎨 **User Experience**
 - [x] **Keyboard Shortcuts**: Full keyboard navigation (Ctrl+E, Ctrl+I, Ctrl+P, etc.)
