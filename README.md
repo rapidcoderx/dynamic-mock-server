@@ -12,6 +12,23 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 
 **🎯 Production-Ready**: Complete CRUD operations, persistent storage, and robust error handling  
 **🎲 Dynamic & Intelligent**: 60+ Faker.js placeholders with realistic response delays  
+**🔍 Advanced Matching**: Query parameter and header-based routing with 7 match types  
+**�️ Multi-Storage Support**: File, PostgreSQL, and MongoDB backends with automatic migration  
+**�🔄 Integration-Friendly**: Export to JSON, Postman collections, and HTTPie commands  
+**📡 API Collections**: Ready-to-use Postman, HTTPie Desktop, and CLI collections  
+**🎨 Modern UX**: Liquid glass UI with keyboard shortcuts and smart notifications  
+**📚 Well-Documented**: Comprehensive guides, examples, and API reference  
+
+> *Ready for real-world use with enterprise-grade features and developer-focused design*
+
+---
+
+A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities. Configure and simulate API responses easily for local testing, demos, or prototyping – all with a beautiful frontend and modular backend.
+
+## 🏆 Key Achievements
+
+**🎯 Production-Ready**: Complete CRUD operations, persistent storage, and robust error handling  
+**🎲 Dynamic & Intelligent**: 60+ Faker.js placeholders with realistic response delays  
 **�️ Multi-Storage Support**: File, PostgreSQL, and MongoDB backends with automatic migration  
 **�🔄 Integration-Friendly**: Export to JSON, Postman collections, and HTTPie commands  
 **📡 API Collections**: Ready-to-use Postman, HTTPie Desktop, and CLI collections  
@@ -27,6 +44,7 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 - 🧱 **Complete Mock Management**:
   - Create mocks with unique names, paths, HTTP methods
   - Optional headers (as JSON) for advanced routing
+  - Query parameter matching with multiple conditions (equals, contains, starts_with, ends_with, regex, exists, not_exists)
   - Custom response body (as JSON) with status codes
   - Edit existing mocks with full validation
   - Delete mocks with confirmation dialogs
@@ -99,6 +117,7 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 
 /docs
   ├── HEADER_ROUTING.md       # Documentation for header-based routing
+  ├── QUERY_PARAMETER_ROUTING.md # Documentation for query parameter matching
   ├── DYNAMIC_VALUES_AND_DELAYS.md  # Complete guide to dynamic values and delays
   ├── DYNAMIC_VALUES_CHEAT_SHEET.md # Quick reference for placeholders and delays
   └── DATABASE_STORAGE.md     # Database storage setup & configuration guide
@@ -112,6 +131,7 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 
 /examples
   ├── header-routing-examples.json  # Example configurations
+  ├── query-parameter-examples.json # Query parameter matching examples
   └── dynamic-values-examples.json  # Dynamic values and delay examples
 
 /.env.example                 # Environment configuration template
@@ -288,6 +308,128 @@ MONGODB_PASSWORD=mock_password # Optional
 - **MongoDB**: Set `STORAGE_TYPE=mongodb` and provide database connection details
 
 The server automatically creates necessary tables/collections and handles graceful fallback to file storage if database connection fails.
+
+---
+
+## 🔍 Query Parameter Matching
+
+The Dynamic Mock Server supports advanced query parameter matching to create more precise mock responses based on request parameters.
+
+### Query Parameter Match Types
+
+| Match Type | Description | Example |
+|------------|-------------|---------|
+| `equals` | Exact value match | `?status=active` matches only "active" |
+| `contains` | Value contains substring | `?name=john` matches "john", "johnny", "johnson" |
+| `starts_with` | Value starts with substring | `?code=US` matches "USA", "USD", "US123" |
+| `ends_with` | Value ends with substring | `?file=.pdf` matches "report.pdf", "data.pdf" |
+| `regex` | Regular expression match | `?id=\d+` matches any numeric ID |
+| `exists` | Parameter must be present | `?debug` matches any request with debug param |
+| `not_exists` | Parameter must not be present | Matches requests without the parameter |
+
+### Required vs Optional Parameters
+
+- **Required**: Mock will only match if the parameter condition is met
+- **Optional**: Mock will match regardless, but if present, the condition must be met
+
+### Query Parameter Examples
+
+**Example 1: API Version Routing**
+```json
+{
+  "name": "API v2 Users",
+  "method": "GET",
+  "path": "/api/users",
+  "queryParams": [
+    {
+      "key": "version",
+      "type": "equals",
+      "value": "2",
+      "required": true
+    }
+  ],
+  "response": {"version": "2.0", "users": [...]}
+}
+```
+
+**Example 2: Search with Filters**
+```json
+{
+  "name": "User Search with Filters",
+  "method": "GET", 
+  "path": "/api/users",
+  "queryParams": [
+    {
+      "key": "search",
+      "type": "contains",
+      "value": "john",
+      "required": false
+    },
+    {
+      "key": "active",
+      "type": "equals", 
+      "value": "true",
+      "required": true
+    }
+  ],
+  "response": {"results": [...], "total": 5}
+}
+```
+
+**Example 3: Debug Mode Detection**
+```json
+{
+  "name": "Debug Response",
+  "method": "GET",
+  "path": "/api/status",
+  "queryParams": [
+    {
+      "key": "debug",
+      "type": "exists",
+      "required": true
+    }
+  ],
+  "response": {"debug": true, "memory": "512MB", "uptime": "2h"}
+}
+```
+
+### Creating Query Parameter Mocks
+
+**Via UI:**
+1. Click "➕ Add Mock" to open the form
+2. Fill in basic details (name, method, path)
+3. In the "Query Parameters" section, click "➕ Add Parameter"
+4. Configure each parameter:
+   - **Parameter name**: The query parameter key
+   - **Match type**: Select from dropdown (equals, contains, etc.)
+   - **Expected value**: The value to match against (not needed for exists/not_exists)
+   - **Required/Optional**: Whether the parameter is mandatory
+
+**Via API:**
+```bash
+curl -X POST http://localhost:8080/api/mocks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Filtered Results",
+    "method": "GET",
+    "path": "/api/products",
+    "queryParams": [
+      {
+        "key": "category",
+        "type": "equals",
+        "value": "electronics",
+        "required": true
+      },
+      {
+        "key": "sort",
+        "type": "starts_with", 
+        "value": "price",
+        "required": false
+      }
+    ],
+    "response": {"products": [...]}
+  }'
+```
 
 ---
 
@@ -502,6 +644,7 @@ Configure realistic network delays in Advanced Options:
 ### 🎯 **Core Functionality** 
 - [x] **Complete Mock Management**: Full CRUD operations with validation
 - [x] **Header-based Routing**: Advanced request matching with optional headers
+- [x] **Query Parameter Matching**: 7 match types (equals, contains, starts_with, ends_with, regex, exists, not_exists)
 - [x] **Mock Analysis**: Conflict detection and duplicate identification
 - [x] **Multi-Storage Support**: File, PostgreSQL, and MongoDB storage backends
 - [x] **Request Testing**: Built-in mock testing and matching validation
@@ -535,6 +678,7 @@ Configure realistic network delays in Advanced Options:
 - [x] **Postman Collection**: Complete v2.1 collection with test scripts and examples
 - [x] **HTTPie Desktop Collection**: Native format for HTTPie Desktop GUI
 - [x] **HTTPie CLI Commands**: Shell script with 50+ command examples
+- [x] **Query Parameter Examples**: Comprehensive examples for all 7 match types
 - [x] **Demo Script**: Interactive demonstration of all features
 - [x] **Environment Variables**: Pre-configured variables for all collections
 - [x] **Documentation**: Comprehensive usage guides and troubleshooting
@@ -550,6 +694,7 @@ Configure realistic network delays in Advanced Options:
 - [x] **Comprehensive Logging**: Detailed request/response logging with noise filtering
 - [x] **Error Handling**: Robust error handling with user-friendly messages
 - [x] **API Documentation**: Built-in API reference and usage examples
+- [x] **Query Parameter Documentation**: Complete guide with examples and best practices
 - [x] **Live Preview**: Real-time mock testing and validation
 
 ### 🔧 **Technical Excellence**

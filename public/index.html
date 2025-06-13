@@ -2046,6 +2046,20 @@
             </div>
             <input type="text" name="headers" placeholder='Header JSON (e.g., {"x-mock-type":"success"})'
                 class="glass p-2 rounded w-full" />
+            
+            <!-- Query Parameters Configuration -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="block text-sm font-medium mb-1">Query Parameters</label>
+                    <button type="button" onclick="addQueryParam('queryParamsContainer')" class="text-xs text-blue-300 hover:text-blue-200 px-2 py-1 rounded">
+                        ➕ Add Parameter
+                    </button>
+                </div>
+                <div id="queryParamsContainer" class="space-y-2">
+                    <div class="text-xs text-gray-400 italic">No query parameters configured</div>
+                </div>
+            </div>
+            
             <textarea name="response" placeholder="Mock response body (JSON)"
                 class="glass p-2 rounded w-full h-32"></textarea>
                 
@@ -2167,6 +2181,20 @@
                     <option value="DELETE">DELETE</option>
                 </select>
                 <input type="text" id="editHeaders" placeholder='Headers JSON (e.g., {"x-env":"dev"})' class="glass p-2 rounded w-full" />
+                
+                <!-- Query Parameters Configuration for Edit -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-sm font-medium mb-1">Query Parameters</label>
+                        <button type="button" onclick="addQueryParam('editQueryParamsContainer')" class="text-xs text-blue-300 hover:text-blue-200 px-2 py-1 rounded">
+                            ➕ Add Parameter
+                        </button>
+                    </div>
+                    <div id="editQueryParamsContainer" class="space-y-2">
+                        <div class="text-xs text-gray-400 italic">No query parameters configured</div>
+                    </div>
+                </div>
+                
                 <textarea id="editResponse" placeholder="Response JSON" class="glass p-2 rounded w-full h-32"></textarea>
                 
                 <!-- Advanced Options for Edit -->
@@ -2544,6 +2572,118 @@
         document.addEventListener("DOMContentLoaded", () => {
             let API_PREFIX = '/api';
 
+            // Query Parameter Management Functions
+            function addQueryParam(containerId) {
+                const container = document.getElementById(containerId);
+                
+                // Remove placeholder text if it exists
+                const placeholder = container.querySelector('.text-gray-400.italic');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                
+                const queryParamDiv = document.createElement('div');
+                queryParamDiv.className = 'query-param-row flex gap-2 items-center';
+                
+                queryParamDiv.innerHTML = `
+                    <input type="text" placeholder="Parameter name" class="flex-1 glass-input text-sm" />
+                    <select class="glass-input text-sm">
+                        <option value="equals">Equals</option>
+                        <option value="contains">Contains</option>
+                        <option value="starts_with">Starts with</option>
+                        <option value="ends_with">Ends with</option>
+                        <option value="regex">Regex</option>
+                        <option value="exists">Exists</option>
+                        <option value="not_exists">Not exists</option>
+                    </select>
+                    <input type="text" placeholder="Expected value" class="flex-1 glass-input text-sm" />
+                    <select class="glass-input text-sm">
+                        <option value="required">Required</option>
+                        <option value="optional">Optional</option>
+                    </select>
+                    <button type="button" onclick="removeQueryParam(this)" class="px-2 py-1 bg-red-500/20 text-red-300 rounded hover:bg-red-500/30 text-sm">✕</button>
+                `;
+                
+                container.appendChild(queryParamDiv);
+            }
+
+            function removeQueryParam(button) {
+                button.parentElement.remove();
+            }
+
+            function collectQueryParams(containerId) {
+                const container = document.getElementById(containerId);
+                const rows = container.querySelectorAll('.query-param-row');
+                const queryParams = [];
+                
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    const selects = row.querySelectorAll('select');
+                    
+                    const key = inputs[0].value.trim();
+                    const type = selects[0].value;
+                    const value = inputs[1].value.trim();
+                    const required = selects[1].value === 'required';
+                    
+                    if (key) {
+                        const param = { key, type, required };
+                        
+                        // Only add value for match types that need it
+                        if (!['exists', 'not_exists'].includes(type)) {
+                            param.value = value;
+                        }
+                        
+                        queryParams.push(param);
+                    }
+                });
+                
+                return queryParams;
+            }
+
+            function populateQueryParams(containerId, queryParams) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = ''; // Clear existing
+                
+                if (queryParams && queryParams.length > 0) {
+                    queryParams.forEach(param => {
+                        const queryParamDiv = document.createElement('div');
+                        queryParamDiv.className = 'query-param-row flex gap-2 items-center';
+                        
+                        queryParamDiv.innerHTML = `
+                            <input type="text" placeholder="Parameter name" class="flex-1 glass-input text-sm" value="${param.key || ''}" />
+                            <select class="glass-input text-sm">
+                                <option value="equals" ${param.type === 'equals' ? 'selected' : ''}>Equals</option>
+                                <option value="contains" ${param.type === 'contains' ? 'selected' : ''}>Contains</option>
+                                <option value="starts_with" ${param.type === 'starts_with' ? 'selected' : ''}>Starts with</option>
+                                <option value="ends_with" ${param.type === 'ends_with' ? 'selected' : ''}>Ends with</option>
+                                <option value="regex" ${param.type === 'regex' ? 'selected' : ''}>Regex</option>
+                                <option value="exists" ${param.type === 'exists' ? 'selected' : ''}>Exists</option>
+                                <option value="not_exists" ${param.type === 'not_exists' ? 'selected' : ''}>Not exists</option>
+                            </select>
+                            <input type="text" placeholder="Expected value" class="flex-1 glass-input text-sm" value="${param.value || ''}" />
+                            <select class="glass-input text-sm">
+                                <option value="required" ${param.required ? 'selected' : ''}>Required</option>
+                                <option value="optional" ${!param.required ? 'selected' : ''}>Optional</option>
+                            </select>
+                            <button type="button" onclick="removeQueryParam(this)" class="px-2 py-1 bg-red-500/20 text-red-300 rounded hover:bg-red-500/30 text-sm">✕</button>
+                        `;
+                        
+                        container.appendChild(queryParamDiv);
+                    });
+                } else {
+                    container.innerHTML = '<div class="text-xs text-gray-400 italic">No query parameters configured</div>';
+                }
+            }
+
+            function resetQueryParams(containerId) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '<div class="text-xs text-gray-400 italic">No query parameters configured</div>';
+            }
+
+            // Add global functions to window for onclick handlers
+            window.addQueryParam = addQueryParam;
+            window.removeQueryParam = removeQueryParam;
+
             async function initApp() {
                 try {
                     const res = await fetch('/api/config');
@@ -2600,7 +2740,10 @@
                         }
                     }
 
-                    const payload = { name, path, method, headers, response, statusCode, delay, dynamic };
+                    // Collect query parameters
+                    const queryParams = collectQueryParams('queryParamsContainer');
+
+                    const payload = { name, path, method, headers, response, statusCode, delay, dynamic, queryParams };
 
                     const res = await fetch(`${API_PREFIX}/mocks`, {
                         method: 'POST',
@@ -2610,6 +2753,7 @@
 
                     if (res.ok) {
                         form.reset();
+                        resetQueryParams('queryParamsContainer');
                         showNotification(`Mock "${name}" created successfully`, 'success');
                     } else {
                         const error = await res.json();
@@ -2714,6 +2858,9 @@
                     const headerCount = Object.keys(mock.headers || {}).length;
                     const headerText = headerCount > 0 ? ` (${headerCount} headers)` : '';
                     
+                    const queryParamCount = (mock.queryParams || []).length;
+                    const queryParamText = queryParamCount > 0 ? ` (${queryParamCount} query params)` : '';
+                    
                     entry.innerHTML = `
                         <div class="flex justify-between items-start gap-4">
                             <div class="flex-1 min-w-0">
@@ -2722,6 +2869,7 @@
                                     <span class="inline-block px-2 py-1 rounded text-xs font-mono bg-gray-700">${mock.method}</span>
                                     <span class="truncate">${mock.path}</span>
                                     ${headerText ? `<span class="text-xs text-blue-300">${headerText}</span>` : ''}
+                                    ${queryParamText ? `<span class="text-xs text-purple-300">${queryParamText}</span>` : ''}
                                 </p>
                                 <p class="text-xs text-gray-400 mt-1 font-mono">ID: ${mock.id}</p>
                             </div>
@@ -2755,12 +2903,17 @@
 
                 const safe = val => val !== undefined ? JSON.stringify(val, null, 2) : 'N/A';
 
+                const queryParamsDisplay = mock.queryParams && mock.queryParams.length > 0 
+                    ? mock.queryParams.map(qp => `${qp.key} ${qp.type} "${qp.value}"`).join(', ') 
+                    : 'None';
+
                 content.innerHTML = `
                     <div><strong>ID:</strong> ${mock.id}</div>
                     <div><strong>Name:</strong> ${mock.name}</div>
                     <div><strong>Method:</strong> ${mock.method}</div>
                     <div><strong>Path:</strong> ${mock.path}</div>
                     <div><strong>Status Code:</strong> ${mock.statusCode || 200}</div>
+                    <div><strong>Query Parameters:</strong> ${queryParamsDisplay}</div>
                     <div><strong>Headers:</strong><pre class="bg-gray-800 p-2 rounded mt-1">${safe(mock.headers)}</pre></div>
                     <div><strong>Response:</strong><pre class="bg-gray-800 p-2 rounded mt-1">${safe(mock.response)}</pre></div>
                 `;
@@ -2785,6 +2938,9 @@
                 
                 // Populate delay and dynamic fields
                 document.getElementById('editDynamic').checked = mock.dynamic || false;
+                
+                // Populate query parameters
+                populateQueryParams('editQueryParamsContainer', mock.queryParams);
                 
                 if (mock.delay) {
                     if (typeof mock.delay === 'number') {
@@ -2890,7 +3046,10 @@
                         }
                     }
 
-                    const payload = { name, path, method, headers, response, statusCode, delay, dynamic };
+                    // Collect query parameters from edit form
+                    const queryParams = collectQueryParams('editQueryParamsContainer');
+
+                    const payload = { name, path, method, headers, response, statusCode, delay, dynamic, queryParams };
 
                     try {
                         const res = await fetch(`${API_PREFIX}/mocks/${mockId}`, {

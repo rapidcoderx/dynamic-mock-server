@@ -253,6 +253,81 @@
           }
         },
         {
+          "name": "Create Mock with Query Parameters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Store the created query param mock ID",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('queryParamMockId', response.id);",
+                  "    pm.test('Query parameter mock created successfully', function () {",
+                  "        pm.expect(response.queryParams).to.be.an('array');",
+                  "        pm.expect(response.queryParams.length).to.be.greaterThan(0);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Filtered Products - Electronics\",\n  \"method\": \"GET\",\n  \"path\": \"/api/products\",\n  \"queryParams\": [\n    {\n      \"key\": \"category\",\n      \"type\": \"equals\",\n      \"value\": \"electronics\",\n      \"required\": true\n    },\n    {\n      \"key\": \"sort\",\n      \"type\": \"starts_with\",\n      \"value\": \"price\",\n      \"required\": false\n    }\n  ],\n  \"response\": {\n    \"products\": [\n      {\n        \"id\": 1,\n        \"name\": \"Smartphone\",\n        \"price\": 699,\n        \"category\": \"electronics\"\n      },\n      {\n        \"id\": 2,\n        \"name\": \"Laptop\",\n        \"price\": 1299,\n        \"category\": \"electronics\"\n      }\n    ],\n    \"total\": 2,\n    \"category\": \"electronics\",\n    \"sorted\": true\n  },\n  \"statusCode\": 200\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks"]
+            },
+            "description": "Create a mock that matches based on query parameters. This example matches requests to /api/products?category=electronics and optionally sorts by price."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Filtered Products - Electronics\",\n  \"method\": \"GET\",\n  \"path\": \"/api/products\",\n  \"queryParams\": [\n    {\n      \"key\": \"category\",\n      \"type\": \"equals\",\n      \"value\": \"electronics\",\n      \"required\": true\n    },\n    {\n      \"key\": \"sort\",\n      \"type\": \"starts_with\",\n      \"value\": \"price\",\n      \"required\": false\n    }\n  ],\n  \"response\": {\n    \"products\": [\n      {\n        \"id\": 1,\n        \"name\": \"Smartphone\",\n        \"price\": 699,\n        \"category\": \"electronics\"\n      },\n      {\n        \"id\": 2,\n        \"name\": \"Laptop\",\n        \"price\": 1299,\n        \"category\": \"electronics\"\n      }\n    ],\n    \"total\": 2,\n    \"category\": \"electronics\",\n    \"sorted\": true\n  },\n  \"statusCode\": 200\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}{{apiPrefix}}/mocks",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["{{apiPrefix}}", "mocks"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"456e7890-e89b-12d3-a456-426614174111\",\n  \"name\": \"Filtered Products - Electronics\",\n  \"method\": \"GET\",\n  \"path\": \"/api/products\",\n  \"queryParams\": [\n    {\n      \"key\": \"category\",\n      \"type\": \"equals\",\n      \"value\": \"electronics\",\n      \"required\": true\n    },\n    {\n      \"key\": \"sort\",\n      \"type\": \"starts_with\",\n      \"value\": \"price\",\n      \"required\": false\n    }\n  ],\n  \"response\": {\n    \"products\": [\n      {\n        \"id\": 1,\n        \"name\": \"Smartphone\",\n        \"price\": 699,\n        \"category\": \"electronics\"\n      },\n      {\n        \"id\": 2,\n        \"name\": \"Laptop\",\n        \"price\": 1299,\n        \"category\": \"electronics\"\n      }\n    ],\n    \"total\": 2,\n    \"category\": \"electronics\",\n    \"sorted\": true\n  },\n  \"statusCode\": 200,\n  \"delay\": null,\n  \"dynamic\": false\n}"
+            }
+          ]
+        },
+        {
           "name": "Update Mock",
           "request": {
             "method": "PUT",
@@ -337,6 +412,28 @@
               "path": ["{{apiPrefix}}", "mocks", "test"]
             },
             "description": "Test if a request would match any existing mocks without actually calling the mock."
+          }
+        },
+        {
+          "name": "Test Mock Endpoint with Query Parameters",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"method\": \"GET\",\n  \"path\": \"/api/products\",\n  \"query\": {\n    \"category\": \"electronics\",\n    \"sort\": \"price_desc\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "test"]
+            },
+            "description": "Test if a request with query parameters would match any existing mocks. This tests query parameter matching logic."
           }
         },
         {
@@ -498,6 +595,51 @@
               "path": ["api", "products"]
             },
             "description": "Call the dynamic product list mock. Each call will return different data."
+          }
+        },
+        {
+          "name": "Call Electronics Products Mock (Query Params)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products?category=electronics&sort=price_asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "electronics",
+                  "description": "Required parameter that must equal 'electronics'"
+                },
+                {
+                  "key": "sort",
+                  "value": "price_asc",
+                  "description": "Optional parameter that must start with 'price'"
+                }
+              ]
+            },
+            "description": "Call the query parameter mock for electronics products. This demonstrates how query parameters are matched."
+          }
+        },
+        {
+          "name": "Call Electronics Products Mock (Required Only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products?category=electronics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "electronics",
+                  "description": "Required parameter that must equal 'electronics'"
+                }
+              ]
+            },
+            "description": "Call the same mock with only the required parameter. The optional sort parameter is ignored."
           }
         },
         {

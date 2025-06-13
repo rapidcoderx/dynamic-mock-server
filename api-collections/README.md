@@ -12,6 +12,9 @@ Complete Postman collection with all API endpoints and examples.
 - Request/response examples for all operations
 - Test scripts for automated workflows
 - Organized into logical folders
+- Query parameter matching examples with all 7 match types
+- Header-based routing examples
+- Dynamic value generation examples
 
 **Import Instructions:**
 1. Open Postman
@@ -27,6 +30,8 @@ Native HTTPie Desktop collection with all API endpoints and examples.
 - Pre-configured environment variables
 - All CRUD operations with examples
 - Organized requests with descriptions
+- Query parameter matching examples
+- Mock invocation examples with parameters
 
 **Import Instructions:**
 1. Open HTTPie Desktop
@@ -41,6 +46,8 @@ Comprehensive HTTPie commands collection with examples for all API operations.
 - Ready-to-run HTTPie commands
 - Detailed examples and comments
 - Advanced usage patterns
+- Query parameter matching examples
+- All 7 match types demonstrated
 - Useful one-liners for common tasks
 
 **Usage:**
@@ -107,6 +114,8 @@ You can modify these in Postman's environment settings or update the variables i
 - **List All Mocks**: `GET /api/v1/mocks`
 - **Create Static Mock**: `POST /api/v1/mocks`
 - **Create Dynamic Mock**: `POST /api/v1/mocks` (with dynamic placeholders)
+- **Create Mock with Query Parameters**: `POST /api/v1/mocks` (with queryParams matching)
+- **Create Mock with Header Matching**: `POST /api/v1/mocks` (with headers matching)
 - **Update Mock**: `PUT /api/v1/mocks/{id}`
 - **Delete Mock**: `DELETE /api/v1/mocks/{id}`
 
@@ -125,6 +134,8 @@ You can modify these in Postman's environment settings or update the variables i
 ### 5. Mock Invocation
 - Examples of calling the actual mock endpoints
 - Different scenarios (static, dynamic, with headers, POST data)
+- Query parameter matching scenarios
+- Testing different match types (equals, contains, starts_with, ends_with, regex, exists, not_exists)
 
 ## 🎯 Example Workflows
 
@@ -140,6 +151,13 @@ You can modify these in Postman's environment settings or update the variables i
 2. **Preview**: Use "Preview Dynamic Response" to see sample output
 3. **Test**: Call the mock endpoint multiple times to see different responses
 4. **Analyze**: Use "Get Available Placeholders" to see all available dynamic values
+
+### Creating and Testing Query Parameter Mocks
+1. **Create Filtered Mock**: Use "Create Mock with Query Parameters" request
+2. **Test with Parameters**: Call `/api/products?category=electronics&sort=price` to match conditions
+3. **Test without Parameters**: Call `/api/products` to verify non-matching behavior
+4. **Test Partial Match**: Call with only some required parameters
+5. **Analyze**: Use "Analyze Request" to debug parameter matching
 
 ### Bulk Operations
 1. **Export**: Use "Export All Mocks" to backup current mocks

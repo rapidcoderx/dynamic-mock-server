@@ -123,6 +123,20 @@
         "parameters": []
       },
       {
+        "name": "Create Mock with Query Parameters",
+        "description": "Create a mock that matches requests based on query parameters with different match types.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "text": "{\n  \"name\": \"Search Users by Name\",\n  \"method\": \"GET\",\n  \"path\": \"/api/users\",\n  \"queryParams\": [\n    {\n      \"key\": \"name\",\n      \"type\": \"contains\",\n      \"value\": \"john\",\n      \"required\": true\n    },\n    {\n      \"key\": \"active\",\n      \"type\": \"equals\",\n      \"value\": \"true\",\n      \"required\": false\n    },\n    {\n      \"key\": \"limit\",\n      \"type\": \"regex\",\n      \"value\": \"^[1-9]\\\\d*$\",\n      \"required\": false\n    }\n  ],\n  \"response\": {\n    \"users\": [\n      {\n        \"id\": 1,\n        \"name\": \"John Doe\",\n        \"email\": \"john@example.com\",\n        \"active\": true\n      },\n      {\n        \"id\": 2,\n        \"name\": \"Johnny Smith\",\n        \"email\": \"johnny@example.com\",\n        \"active\": true\n      }\n    ],\n    \"total\": 2,\n    \"searchTerm\": \"john\",\n    \"activeOnly\": false\n  },\n  \"statusCode\": 200\n}"
+        },
+        "parameters": []
+      },
+      {
         "name": "Create Mock with Header Matching",
         "description": "Create a mock that matches requests based on specific headers.",
         "url": "{{baseUrl}}{{apiPrefix}}/mocks",
@@ -223,6 +237,55 @@
           }
         },
         "parameters": []
+      },
+      {
+        "name": "Test Mock with Query Parameters",
+        "description": "Test if a request with query parameters would match any existing mocks.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/test",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "method": "GET",
+            "path": "/api/users",
+            "query": {
+              "name": "johnny",
+              "active": "true",
+              "limit": "10"
+            }
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Call User Search Mock (Query Parameters)",
+        "description": "Call the actual mock endpoint with query parameters to test the matching.",
+        "url": "{{baseUrl}}/api/users",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "value": "johnny",
+            "description": "Search for users containing 'johnny'"
+          },
+          {
+            "name": "active",
+            "value": "true",
+            "description": "Filter for active users only"
+          },
+          {
+            "name": "limit",
+            "value": "10",
+            "description": "Limit results to 10 users"
+          }
+        ]
       },
       {
         "name": "Analyze Request",

@@ -1,0 +1,268 @@
+[
+  {
+    "name": "Product Search - Electronics Category",
+    "method": "GET",
+    "path": "/api/products",
+    "queryParams": [
+      {
+        "key": "category",
+        "type": "equals",
+        "value": "electronics",
+        "required": true
+      }
+    ],
+    "response": {
+      "products": [
+        {"id": 1, "name": "Smartphone", "price": 699, "category": "electronics"},
+        {"id": 2, "name": "Laptop", "price": 1299, "category": "electronics"},
+        {"id": 3, "name": "Headphones", "price": 199, "category": "electronics"}
+      ],
+      "total": 3,
+      "category": "electronics"
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "Product Search - Clothing Category with Sort",
+    "method": "GET", 
+    "path": "/api/products",
+    "queryParams": [
+      {
+        "key": "category",
+        "type": "equals",
+        "value": "clothing",
+        "required": true
+      },
+      {
+        "key": "sort",
+        "type": "starts_with",
+        "value": "price",
+        "required": false
+      }
+    ],
+    "response": {
+      "products": [
+        {"id": 10, "name": "T-Shirt", "price": 25, "category": "clothing"},
+        {"id": 11, "name": "Jeans", "price": 80, "category": "clothing"},
+        {"id": 12, "name": "Jacket", "price": 150, "category": "clothing"}
+      ],
+      "total": 3,
+      "category": "clothing",
+      "sorted": true
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "User Search by Name Pattern",
+    "method": "GET",
+    "path": "/api/users",
+    "queryParams": [
+      {
+        "key": "name",
+        "type": "contains",
+        "value": "john",
+        "required": true
+      }
+    ],
+    "response": {
+      "users": [
+        {"id": 1, "name": "John Doe", "email": "john@example.com"},
+        {"id": 2, "name": "Johnny Smith", "email": "johnny@example.com"},
+        {"id": 3, "name": "Johnson Williams", "email": "johnson@example.com"}
+      ],
+      "searchTerm": "john",
+      "matches": 3
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "API Documentation - Version 2",
+    "method": "GET",
+    "path": "/api/docs",
+    "queryParams": [
+      {
+        "key": "version",
+        "type": "equals",
+        "value": "2",
+        "required": true
+      }
+    ],
+    "response": {
+      "api": {
+        "version": "2.0",
+        "endpoints": [
+          {"path": "/api/v2/users", "methods": ["GET", "POST"]},
+          {"path": "/api/v2/products", "methods": ["GET", "POST", "PUT", "DELETE"]},
+          {"path": "/api/v2/orders", "methods": ["GET", "POST"]}
+        ]
+      },
+      "deprecated": false
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "File Download - PDF Files Only",
+    "method": "GET",
+    "path": "/api/files",
+    "queryParams": [
+      {
+        "key": "format",
+        "type": "ends_with",
+        "value": "pdf",
+        "required": true
+      }
+    ],
+    "response": {
+      "files": [
+        {"id": 1, "name": "report.pdf", "size": "2.5MB", "format": "pdf"},
+        {"id": 2, "name": "manual.pdf", "size": "5.1MB", "format": "pdf"},
+        {"id": 3, "name": "invoice.pdf", "size": "1.2MB", "format": "pdf"}
+      ],
+      "format": "pdf",
+      "total": 3
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "Debug Information (Debug Mode Enabled)",
+    "method": "GET",
+    "path": "/api/status",
+    "queryParams": [
+      {
+        "key": "debug",
+        "type": "exists",
+        "required": true
+      }
+    ],
+    "response": {
+      "status": "ok",
+      "debug": true,
+      "server": {
+        "uptime": "2h 15m",
+        "memory": "512MB",
+        "cpu": "15%",
+        "connections": 42
+      },
+      "database": {
+        "status": "connected",
+        "pool": "8/20",
+        "latency": "2ms"
+      }
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "User ID Validation - Numeric IDs Only",
+    "method": "GET",
+    "path": "/api/user",
+    "queryParams": [
+      {
+        "key": "id",
+        "type": "regex",
+        "value": "^\\d+$",
+        "required": true
+      }
+    ],
+    "response": {
+      "user": {
+        "id": "{{id}}",
+        "name": "{{name}}",
+        "email": "{{email}}",
+        "created": "{{isoDateTime}}"
+      },
+      "validation": "passed"
+    },
+    "statusCode": 200,
+    "dynamic": true
+  },
+  {
+    "name": "Public API (No Auth Required)",
+    "method": "GET",
+    "path": "/api/public",
+    "queryParams": [
+      {
+        "key": "auth",
+        "type": "not_exists",
+        "required": true
+      }
+    ],
+    "response": {
+      "message": "Welcome to our public API",
+      "data": {
+        "version": "1.0",
+        "endpoints": ["/api/public/health", "/api/public/info"],
+        "rateLimit": "1000 requests/hour"
+      },
+      "public": true
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "Search with Multiple Filters",
+    "method": "GET",
+    "path": "/api/search",
+    "queryParams": [
+      {
+        "key": "query",
+        "type": "contains",
+        "value": "test",
+        "required": true
+      },
+      {
+        "key": "type",
+        "type": "equals",
+        "value": "user",
+        "required": true
+      },
+      {
+        "key": "limit",
+        "type": "regex",
+        "value": "^[1-9]\\d*$",
+        "required": false
+      }
+    ],
+    "response": {
+      "results": [
+        {"id": 1, "name": "Test User 1", "type": "user"},
+        {"id": 2, "name": "Test User 2", "type": "user"}
+      ],
+      "query": "test",
+      "type": "user",
+      "total": 2,
+      "pagination": {
+        "limit": 10,
+        "offset": 0
+      }
+    },
+    "statusCode": 200
+  },
+  {
+    "name": "API Response with Optional Parameters",
+    "method": "GET",
+    "path": "/api/data",
+    "queryParams": [
+      {
+        "key": "format",
+        "type": "equals",
+        "value": "json",
+        "required": false
+      },
+      {
+        "key": "compress",
+        "type": "equals",
+        "value": "true",
+        "required": false
+      }
+    ],
+    "response": {
+      "data": {
+        "items": [1, 2, 3, 4, 5],
+        "count": 5
+      },
+      "format": "json",
+      "compressed": false,
+      "size": "small"
+    },
+    "statusCode": 200
+  }
+]

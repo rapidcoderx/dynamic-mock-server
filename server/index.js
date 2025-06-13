@@ -81,7 +81,8 @@ app.use(async (req, res, next) => {
     const result = findMock({
         method: req.method,
         path: req.path,
-        headers: req.headers
+        headers: req.headers,
+        query: req.query
     }, mockStore);
 
     if (result.found) {
@@ -89,7 +90,10 @@ app.use(async (req, res, next) => {
         const headerInfo = Object.keys(mock.headers || {}).length > 0 
             ? ` (matched headers: ${JSON.stringify(mock.headers)})`
             : '';
-        logger.info(`🎭 Matched mock "${mock.name}" for ${req.method} ${req.path}${headerInfo}`);
+        const queryInfo = Object.keys(mock.queryParams || {}).length > 0
+            ? ` (matched query params: ${JSON.stringify(mock.queryParams)})`
+            : '';
+        logger.info(`🎭 Matched mock "${mock.name}" for ${req.method} ${req.path}${headerInfo}${queryInfo}`);
         
         try {
             // Process dynamic response with delays and dynamic values

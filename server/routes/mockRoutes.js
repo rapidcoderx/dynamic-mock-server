@@ -22,6 +22,7 @@ router.post('/', (req, res) => {
             method, 
             path, 
             headers = {}, 
+            queryParams = {},
             response, 
             statusCode = 200,
             delay = null,
@@ -39,6 +40,7 @@ router.post('/', (req, res) => {
             method: method.toUpperCase(),
             path,
             headers,
+            queryParams,
             response,
             statusCode,
             delay,
@@ -47,7 +49,8 @@ router.post('/', (req, res) => {
 
         // Check for uniqueness
         if (!isUniqueMock(newMock, mockStore)) {
-            logger.warn(`❌ Duplicate mock configuration: [${newMock.method}] ${newMock.path} with same headers`);
+            const conflictMsg = `[${newMock.method}] ${newMock.path} with same headers and query parameters`;
+            logger.warn(`❌ Duplicate mock configuration: ${conflictMsg}`);
             return res.status(409).json({ 
                 error: 'A mock with the same method, path, and headers already exists. Each mock must have a unique combination of method + path + headers.' 
             });
@@ -110,7 +113,9 @@ router.get('/analyze', (req, res) => {
                     id: m.id,
                     name: m.name,
                     headers: m.headers,
-                    hasHeaders: Object.keys(m.headers || {}).length > 0
+                    queryParams: m.queryParams,
+                    hasHeaders: Object.keys(m.headers || {}).length > 0,
+                    hasQueryParams: Object.keys(m.queryParams || {}).length > 0
                 }))
             });
         }
@@ -121,20 +126,20 @@ router.get('/analyze', (req, res) => {
         totalMocks: mockStore.length,
         conflicts: conflicts,
         summary: conflicts.length === 0 
-            ? 'All mocks have unique path+method+headers combinations'
-            : `Found ${conflicts.length} path+method combinations with multiple mocks (header-based routing required)`
+            ? 'All mocks have unique path+method+headers+query combinations'
+            : `Found ${conflicts.length} path+method combinations with multiple mocks (header or query parameter based routing required)`
     });
 });
 
 // POST /mocks/test - Test if a request would match any mock
 router.post('/test', (req, res) => {
-    const { method, path, headers = {} } = req.body;
+    const { method, path, headers = {}, query = {} } = req.body;
     
     if (!method || !path) {
         return res.status(400).json({ error: 'method and path are required' });
     }
 
-    const result = findMock({ method: method.toUpperCase(), path, headers }, mockStore);
+    const result = findMock({ method: method.toUpperCase(), path, headers, query }, mockStore);
     
     if (result.found) {
         const mock = result.mock;
@@ -147,6 +152,7 @@ router.post('/test', (req, res) => {
                 method: mock.method,
                 path: mock.path,
                 headers: mock.headers,
+                queryParams: mock.queryParams,
                 response: mock.response,
                 statusCode: mock.statusCode
             }
@@ -169,6 +175,7 @@ router.put('/:id', (req, res) => {
             method, 
             path, 
             headers = {}, 
+            queryParams = {},
             response, 
             statusCode = 200,
             delay = null,
@@ -192,6 +199,7 @@ router.put('/:id', (req, res) => {
             method: method.toUpperCase(),
             path,
             headers,
+            queryParams,
             response,
             statusCode,
             delay,

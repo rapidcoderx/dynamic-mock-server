@@ -17,6 +17,19 @@ API_PREFIX="/api/v1"
 echo "🚀 Dynamic Mock Server - HTTPie Commands Collection"
 echo "=================================================="
 echo ""
+echo "🔍 Query Parameter Matching Features:"
+echo "- equals: Exact value match"
+echo "- contains: Substring match"
+echo "- starts_with: Prefix match"
+echo "- ends_with: Suffix match"
+echo "- regex: Regular expression match"
+echo "- exists: Parameter presence check"
+echo "- not_exists: Parameter absence check"
+echo ""
+echo "📝 Required vs Optional Parameters:"
+echo "- required: true = Mock only matches if parameter condition is met"
+echo "- required: false = Mock matches regardless, but if present, condition must be met"
+echo ""
 
 # ======================
 # Health & Configuration
@@ -115,6 +128,51 @@ http POST ${BASE_URL}${API_PREFIX}/mocks \
 EOF
 echo ""
 
+# Create a mock with query parameter matching
+echo "# Create Mock with Query Parameter Matching"
+cat << 'EOF'
+http POST ${BASE_URL}${API_PREFIX}/mocks \
+  name="Product Search - Electronics" \
+  method="GET" \
+  path="/api/products" \
+  queryParams:='[
+    {
+      "key": "category",
+      "type": "equals",
+      "value": "electronics",
+      "required": true
+    },
+    {
+      "key": "sort",
+      "type": "starts_with",
+      "value": "price",
+      "required": false
+    },
+    {
+      "key": "limit",
+      "type": "regex",
+      "value": "^[1-9]\\d*$",
+      "required": false
+    }
+  ]' \
+  response:='{
+    "products": [
+      {"id": 1, "name": "Smartphone", "price": 699, "category": "electronics"},
+      {"id": 2, "name": "Laptop", "price": 1299, "category": "electronics"},
+      {"id": 3, "name": "Headphones", "price": 199, "category": "electronics"}
+    ],
+    "total": 3,
+    "category": "electronics",
+    "filters": {
+      "sorted": true,
+      "limit": 50
+    }
+  }' \
+  statusCode:=200 \
+  dynamic:=false
+EOF
+echo ""
+
 # Update a mock (replace MOCK_ID with actual ID)
 echo "# Update Mock (replace MOCK_ID with actual mock ID)"
 cat << 'EOF'
@@ -156,6 +214,16 @@ http POST ${BASE_URL}${API_PREFIX}/mocks/test \
   method="GET" \
   path="/api/users/profile" \
   headers:='{"Authorization": "Bearer token"}'
+EOF
+echo ""
+
+# Test mock endpoint with query parameters
+echo "# Test Mock Endpoint with Query Parameters"
+cat << 'EOF'
+http POST ${BASE_URL}${API_PREFIX}/mocks/test \
+  method="GET" \
+  path="/api/products" \
+  query:='{"category": "electronics", "sort": "price_asc", "limit": "10"}'
 EOF
 echo ""
 
@@ -285,6 +353,23 @@ echo ""
 # Call admin API with headers
 echo "# Call Admin API with Required Headers"
 echo "http GET ${BASE_URL}/api/admin/users Authorization:'Bearer admin-token' X-Admin-Role:super"
+echo ""
+
+# Call products API with query parameters
+echo "# Call Products API with Query Parameters (Electronics Category)"
+echo "http GET ${BASE_URL}/api/products category==electronics sort==price_asc limit==10"
+echo ""
+
+echo "# Call Products API with Required Parameter Only"
+echo "http GET ${BASE_URL}/api/products category==electronics"
+echo ""
+
+echo "# Call Products API with Different Category (should not match electronics mock)"
+echo "http GET ${BASE_URL}/api/products category==clothing"
+echo ""
+
+echo "# Call User Search with Query Parameters"
+echo "http GET ${BASE_URL}/api/users name==johnny active==true limit==5"
 echo ""
 
 # ======================
