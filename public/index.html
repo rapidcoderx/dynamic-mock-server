@@ -160,19 +160,81 @@
         .modal-overlay.hidden {
             display: none;
         }
+
+        /* Tooltip styling for buttons */
+        .liquid-button {
+            position: relative;
+        }
+
+        .liquid-button:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            animation: tooltipFadeIn 0.2s ease-in-out forwards;
+        }
+
+        .liquid-button:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            animation: tooltipFadeIn 0.2s ease-in-out forwards;
+        }
+
+        @keyframes tooltipFadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* Custom scrollbar for help modal */
+        .help-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .help-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .help-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        .help-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
 
 <body class="min-h-screen flex items-center justify-center p-6">
 
     <div class="enhanced-glass shadow-lg p-8 w-full max-w-3xl text-white">
-        <h1 class="text-3xl font-bold mb-4 text-center flex items-center justify-center gap-2">
+        <h1 class="text-3xl font-bold mb-6 text-center flex items-center justify-center gap-2">
             <img src="icon.svg" class="w-7 h-7 opacity-90" alt="mock server icon" />
             Dynamic Mock Server
         </h1>
 
         <!-- Form: Define New Mock -->
-        <form id="mockForm" class="space-y-4">
+        <form id="mockForm" class="space-y-4 mb-6">
             <div class="grid grid-cols-2 gap-4">
                 <input type="text" name="name" placeholder="Unique mock name (e.g., getUserDev)" required
                     class="glass p-2 rounded w-full" />
@@ -191,12 +253,27 @@
         </form>
 
         <!-- Buttons -->
-        <div class="flex justify-between items-center gap-4 mt-4">
-            <button type="submit" form="mockForm" class="liquid-button flex-1 text-center">
-                ＋ Add Mock
+        <div class="flex justify-center items-center gap-4 mt-6 pt-4 border-t border-white/10">
+            <button type="submit" form="mockForm" class="liquid-button p-3 text-xl" title="Add Mock (Ctrl+N)">
+                ＋
             </button>
-            <button type="button" id="viewMocksBtn" class="liquid-button flex-1 text-center">
-                ⊞ View Mocks
+            <button type="button" id="viewMocksBtn" class="liquid-button p-3 text-xl" title="View Mocks (Ctrl+M)">
+                👁️
+            </button>
+            <button type="button" id="exportBtn" class="liquid-button p-3 text-xl" title="Export Mocks (Ctrl+E)">
+                ⬆️
+            </button>
+            <button type="button" id="importBtn" class="liquid-button p-3 text-xl" title="Import Mocks (Ctrl+I)">
+                ⬇️
+            </button>
+            <button type="button" id="exportPostmanBtn" class="liquid-button p-3 text-xl" title="Postman Collection (Ctrl+P)">
+                📋
+            </button>
+            <button type="button" id="exportHttpieBtn" class="liquid-button p-3 text-xl" title="HTTPie Commands">
+                🔧
+            </button>
+            <button type="button" id="helpBtn" class="liquid-button p-3 text-xl" title="Help & Shortcuts (Ctrl+H)">
+                ❓
             </button>
         </div>
     </div>
@@ -266,6 +343,160 @@
         </div>
     </div>
 
+    <!-- Import Mocks Modal -->
+    <div id="importModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
+        <div class="glass rounded-xl p-6 w-full max-w-2xl text-white relative">
+            <button id="closeImportModal" class="absolute top-2 right-4 text-xl">&times;</button>
+            <h2 class="text-xl font-bold mb-4">📥 Import Mock Collection</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Choose Import Method:</label>
+                    <div class="flex gap-4 mb-4">
+                        <button id="fileImportBtn" class="action-button">📁 From File</button>
+                        <button id="jsonImportBtn" class="action-button">📝 Paste JSON</button>
+                    </div>
+                </div>
+                
+                <!-- File Import -->
+                <div id="fileImportSection" class="hidden">
+                    <input type="file" id="importFile" accept=".json" class="glass p-2 rounded w-full">
+                    <p class="text-sm text-gray-300 mt-2">Select a JSON file exported from this mock server</p>
+                </div>
+                
+                <!-- JSON Import -->
+                <div id="jsonImportSection" class="hidden">
+                    <textarea id="importJson" placeholder="Paste your exported JSON here..." 
+                        class="glass p-3 rounded w-full h-40 text-sm font-mono"></textarea>
+                    <p class="text-sm text-gray-300 mt-2">Paste the exported JSON mock collection</p>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="replaceExisting" class="rounded">
+                    <label for="replaceExisting" class="text-sm">Replace existing mocks with same path+method+headers</label>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button id="importConfirm" class="liquid-button flex-1">📥 Import Mocks</button>
+                    <button id="importCancel" class="liquid-button flex-1">◂ Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
+        <div class="glass rounded-xl p-6 w-full max-w-xl max-h-[90vh] text-white relative overflow-hidden flex flex-col">
+            <button id="closeHelpModal" class="absolute top-3 right-4 text-xl hover:text-red-300">&times;</button>
+            
+            <!-- Header -->
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">❓</span>
+                <h2 class="text-xl font-bold">Quick Reference</h2>
+            </div>
+            
+            <!-- Scrollable Content -->
+            <div class="overflow-y-auto flex-1 space-y-4 pr-2 help-scroll">
+                
+                <!-- Keyboard Shortcuts -->
+                <div>
+                    <h3 class="text-sm font-semibold mb-2 text-blue-300 flex items-center gap-1">
+                        <span>⌨️</span> Shortcuts
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="glass p-2 rounded text-center">
+                            <kbd class="bg-white/20 px-1 rounded text-xs">Ctrl+N</kbd>
+                            <div class="mt-1">Add Mock</div>
+                        </div>
+                        <div class="glass p-2 rounded text-center">
+                            <kbd class="bg-white/20 px-1 rounded text-xs">Ctrl+M</kbd>
+                            <div class="mt-1">View Mocks</div>
+                        </div>
+                        <div class="glass p-2 rounded text-center">
+                            <kbd class="bg-white/20 px-1 rounded text-xs">Ctrl+E</kbd>
+                            <div class="mt-1">Export</div>
+                        </div>
+                        <div class="glass p-2 rounded text-center">
+                            <kbd class="bg-white/20 px-1 rounded text-xs">Ctrl+I</kbd>
+                            <div class="mt-1">Import</div>
+                        </div>
+                        <div class="glass p-2 rounded text-center">
+                            <kbd class="bg-white/20 px-1 rounded text-xs">Ctrl+P</kbd>
+                            <div class="mt-1">Postman</div>
+                        </div>
+                        <div class="glass p-2 rounded text-center">
+                            <kbd class="bg-white/20 px-1 rounded text-xs">ESC</kbd>
+                            <div class="mt-1">Close</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Button Guide -->
+                <div>
+                    <h3 class="text-sm font-semibold mb-2 text-green-300 flex items-center gap-1">
+                        <span>🎯</span> Buttons
+                    </h3>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex items-center gap-2 glass p-2 rounded">
+                            <span class="text-lg">＋</span> <span>Add new mock</span>
+                        </div>
+                        <div class="flex items-center gap-2 glass p-2 rounded">
+                            <span class="text-lg">👁️</span> <span>View all mocks</span>
+                        </div>
+                        <div class="flex items-center gap-2 glass p-2 rounded">
+                            <span class="text-lg">⬆️</span> <span>Export collection</span>
+                        </div>
+                        <div class="flex items-center gap-2 glass p-2 rounded">
+                            <span class="text-lg">⬇️</span> <span>Import collection</span>
+                        </div>
+                        <div class="flex items-center gap-2 glass p-2 rounded">
+                            <span class="text-lg">📋</span> <span>Postman collection</span>
+                        </div>
+                        <div class="flex items-center gap-2 glass p-2 rounded">
+                            <span class="text-lg">🔧</span> <span>HTTPie commands</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick API Reference -->
+                <div>
+                    <h3 class="text-sm font-semibold mb-2 text-purple-300 flex items-center gap-1">
+                        <span>🔗</span> API
+                    </h3>
+                    <div class="glass p-3 rounded text-xs font-mono space-y-1">
+                        <div><span class="text-green-400">GET</span> /api/mocks</div>
+                        <div><span class="text-blue-400">POST</span> /api/mocks</div>
+                        <div><span class="text-yellow-400">PUT</span> /api/mocks/:id</div>
+                        <div><span class="text-red-400">DELETE</span> /api/mocks/:id</div>
+                        <div class="border-t border-white/20 pt-1 mt-1">
+                            <div><span class="text-green-400">GET</span> /api/mocks/export</div>
+                            <div><span class="text-blue-400">POST</span> /api/mocks/import</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tips -->
+                <div>
+                    <h3 class="text-sm font-semibold mb-2 text-yellow-300 flex items-center gap-1">
+                        <span>💡</span> Tips
+                    </h3>
+                    <div class="glass p-3 rounded text-xs space-y-1">
+                        <div>• Use headers for advanced routing</div>
+                        <div>• Export/import for team sharing</div>
+                        <div>• Postman collections for testing</div>
+                        <div>• HTTPie for command-line testing</div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- Footer -->
+            <div class="flex justify-center mt-4 pt-3 border-t border-white/20">
+                <button id="closeHelpBtn" class="liquid-button px-4 py-1 text-sm">Got it!</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             let API_PREFIX = '/api';
@@ -282,6 +513,8 @@
                 setupForm();
                 setupModal();
                 setupEditForm();
+                setupExportImport();
+                setupHelp();
             }
 
             function setupForm() {
@@ -536,6 +769,235 @@
                 });
             }
 
+            // Export/Import functionality
+            function setupExportImport() {
+                const exportBtn = document.getElementById('exportBtn');
+                const importBtn = document.getElementById('importBtn');
+                const exportPostmanBtn = document.getElementById('exportPostmanBtn');
+                const exportHttpieBtn = document.getElementById('exportHttpieBtn');
+                const importModal = document.getElementById('importModal');
+                const closeImportModal = document.getElementById('closeImportModal');
+                const fileImportBtn = document.getElementById('fileImportBtn');
+                const jsonImportBtn = document.getElementById('jsonImportBtn');
+                const fileImportSection = document.getElementById('fileImportSection');
+                const jsonImportSection = document.getElementById('jsonImportSection');
+                const importConfirm = document.getElementById('importConfirm');
+                const importCancel = document.getElementById('importCancel');
+
+                // Export mocks as JSON
+                exportBtn.onclick = async () => {
+                    try {
+                        const res = await fetch(`${API_PREFIX}/mocks/export`);
+                        const data = await res.json();
+                        
+                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `mock-collection-${new Date().toISOString().split('T')[0]}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        showNotification(`📤 Exported ${data.totalMocks} mocks successfully`, 'success');
+                    } catch (err) {
+                        showNotification(`❌ Export failed: ${err.message}`, 'error');
+                    }
+                };
+
+                // Export Postman collection
+                exportPostmanBtn.onclick = async () => {
+                    try {
+                        const res = await fetch(`${API_PREFIX}/mocks/export/postman`);
+                        const collection = await res.json();
+                        
+                        const blob = new Blob([JSON.stringify(collection, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `postman-collection-${new Date().toISOString().split('T')[0]}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        showNotification(`📋 Postman collection exported successfully`, 'success');
+                    } catch (err) {
+                        showNotification(`❌ Postman export failed: ${err.message}`, 'error');
+                    }
+                };
+
+                // Export HTTPie commands
+                exportHttpieBtn.onclick = async () => {
+                    try {
+                        const res = await fetch(`${API_PREFIX}/mocks/export/httpie`);
+                        const data = await res.json();
+                        
+                        // Create a formatted text file with commands
+                        let content = `# ${data.info.title}\n`;
+                        content += `# ${data.info.description}\n`;
+                        content += `# Generated: ${data.info.generated}\n`;
+                        content += `# Base URL: ${data.baseUrl}\n\n`;
+                        
+                        data.usage.forEach(line => {
+                            content += line + '\n';
+                        });
+                        
+                        content += '\n# === MOCK ENDPOINTS ===\n\n';
+                        
+                        data.commands.forEach(cmd => {
+                            content += `# ${cmd.description}\n`;
+                            content += `${cmd.command}\n\n`;
+                        });
+                        
+                        const blob = new Blob([content], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `httpie-commands-${new Date().toISOString().split('T')[0]}.txt`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        
+                        showNotification(`🔧 HTTPie commands exported successfully`, 'success');
+                    } catch (err) {
+                        showNotification(`❌ HTTPie export failed: ${err.message}`, 'error');
+                    }
+                };
+
+                // Show import modal
+                importBtn.onclick = () => {
+                    importModal.classList.remove('hidden');
+                    // Reset sections
+                    fileImportSection.classList.add('hidden');
+                    jsonImportSection.classList.add('hidden');
+                    document.getElementById('importFile').value = '';
+                    document.getElementById('importJson').value = '';
+                };
+
+                // Close import modal
+                const closeImportModalFunc = () => {
+                    importModal.classList.add('hidden');
+                };
+                closeImportModal.onclick = closeImportModalFunc;
+                importCancel.onclick = closeImportModalFunc;
+
+                // Import method selection
+                fileImportBtn.onclick = () => {
+                    fileImportSection.classList.remove('hidden');
+                    jsonImportSection.classList.add('hidden');
+                    fileImportBtn.classList.add('bg-white/20');
+                    jsonImportBtn.classList.remove('bg-white/20');
+                };
+
+                jsonImportBtn.onclick = () => {
+                    jsonImportSection.classList.remove('hidden');
+                    fileImportSection.classList.add('hidden');
+                    jsonImportBtn.classList.add('bg-white/20');
+                    fileImportBtn.classList.remove('bg-white/20');
+                };
+
+                // Handle file import
+                document.getElementById('importFile').onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            document.getElementById('importJson').value = e.target.result;
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+
+                // Import confirmation
+                importConfirm.onclick = async () => {
+                    try {
+                        const jsonContent = document.getElementById('importJson').value.trim();
+                        const replaceExisting = document.getElementById('replaceExisting').checked;
+                        
+                        if (!jsonContent) {
+                            showNotification('❌ Please provide JSON content to import', 'error');
+                            return;
+                        }
+                        
+                        let importData;
+                        try {
+                            importData = JSON.parse(jsonContent);
+                        } catch (err) {
+                            showNotification('❌ Invalid JSON format', 'error');
+                            return;
+                        }
+                        
+                        // Handle both direct mock arrays and export format
+                        const mocks = importData.mocks || importData;
+                        if (!Array.isArray(mocks)) {
+                            showNotification('❌ Import data must contain a mocks array', 'error');
+                            return;
+                        }
+                        
+                        const res = await fetch(`${API_PREFIX}/mocks/import`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ mocks, replaceExisting })
+                        });
+                        
+                        const result = await res.json();
+                        
+                        if (result.success) {
+                            closeImportModalFunc();
+                            showNotification(
+                                `📥 Imported ${result.imported} mocks successfully` + 
+                                (result.duplicatesSkipped > 0 ? ` (${result.duplicatesSkipped} duplicates skipped)` : ''),
+                                'success'
+                            );
+                            
+                            if (result.errors.length > 0) {
+                                showNotification(`⚠️ ${result.errors.length} errors occurred during import`, 'error');
+                                console.warn('Import errors:', result.errors);
+                            }
+                            
+                            // Refresh mock list if modal is open
+                            if (!document.getElementById('mockModal').classList.contains('hidden')) {
+                                await loadMocks(false);
+                            }
+                        } else {
+                            showNotification('❌ Import failed', 'error');
+                        }
+                        
+                    } catch (err) {
+                        showNotification(`❌ Import error: ${err.message}`, 'error');
+                    }
+                };
+            }
+
+            // Help modal functionality
+            function setupHelp() {
+                const helpBtn = document.getElementById('helpBtn');
+                const helpModal = document.getElementById('helpModal');
+                const closeHelpModal = document.getElementById('closeHelpModal');
+                const closeHelpBtn = document.getElementById('closeHelpBtn');
+
+                const closeHelp = () => {
+                    helpModal.classList.add('hidden');
+                };
+
+                helpBtn.onclick = () => {
+                    helpModal.classList.remove('hidden');
+                };
+
+                closeHelpModal.onclick = closeHelp;
+                closeHelpBtn.onclick = closeHelp;
+
+                // Close when clicking outside
+                helpModal.addEventListener('click', (e) => {
+                    if (e.target === helpModal) {
+                        closeHelp();
+                    }
+                });
+            }
+
             // Smart Notification System
             function showNotification(message, type = 'info', duration = 4000) {
                 const container = document.getElementById('notificationContainer');
@@ -590,6 +1052,8 @@
                     document.getElementById('mockDetailModal').classList.add('hidden');
                     document.getElementById('editMockModal').classList.add('hidden');
                     document.getElementById('deleteConfirmModal').classList.add('hidden');
+                    document.getElementById('importModal').classList.add('hidden');
+                    document.getElementById('helpModal').classList.add('hidden');
                 }
                 
                 // Ctrl+N to add new mock
@@ -602,6 +1066,30 @@
                 if (e.ctrlKey && e.key === 'm') {
                     e.preventDefault();
                     document.getElementById('viewMocksBtn').click();
+                }
+                
+                // Ctrl+E to export mocks
+                if (e.ctrlKey && e.key === 'e') {
+                    e.preventDefault();
+                    document.getElementById('exportBtn').click();
+                }
+                
+                // Ctrl+I to import mocks
+                if (e.ctrlKey && e.key === 'i') {
+                    e.preventDefault();
+                    document.getElementById('importBtn').click();
+                }
+                
+                // Ctrl+P to export Postman collection
+                if (e.ctrlKey && e.key === 'p') {
+                    e.preventDefault();
+                    document.getElementById('exportPostmanBtn').click();
+                }
+                
+                // Ctrl+H or F1 to show help
+                if ((e.ctrlKey && e.key === 'h') || e.key === 'F1') {
+                    e.preventDefault();
+                    document.getElementById('helpBtn').click();
                 }
             });
 

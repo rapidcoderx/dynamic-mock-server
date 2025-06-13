@@ -156,6 +156,23 @@ Content-Type: application/json
 
 # Analyze mock conflicts
 GET http://localhost:8080/api/mocks/analyze
+
+# Export all mocks as JSON
+GET http://localhost:8080/api/mocks/export
+
+# Import mocks from JSON
+POST http://localhost:8080/api/mocks/import
+Content-Type: application/json
+{
+  "mocks": [...],
+  "replaceExisting": false
+}
+
+# Export Postman collection
+GET http://localhost:8080/api/mocks/export/postman?baseUrl=http://localhost:8080
+
+# Export HTTPie commands
+GET http://localhost:8080/api/mocks/export/httpie?baseUrl=http://localhost:8080
 ```
 
 #### Using Your Mocked APIs
@@ -164,6 +181,28 @@ GET http://localhost:8080/api/mocks/analyze
 GET http://localhost:8080/api/user
 x-mock-type: success
 ```
+
+### 🔄 Export/Import & Test Generation
+
+#### Export Mock Collections
+- **JSON Export**: Download complete mock collections with metadata
+- **Postman Collections**: Generate ready-to-use Postman collections with example requests/responses
+- **HTTPie Commands**: Export formatted command-line test scripts
+
+#### Import Mock Collections
+- **File Upload**: Import JSON files from previous exports
+- **JSON Paste**: Direct JSON import via textarea
+- **Duplicate Handling**: Option to replace or skip existing mocks
+- **Validation**: Comprehensive error reporting during import
+
+#### Keyboard Shortcuts
+- `Ctrl + N`: Add new mock (＋)
+- `Ctrl + M`: View all mocks (👁️) 
+- `Ctrl + E`: Export mocks as JSON (⬆️)
+- `Ctrl + I`: Open import modal (⬇️)
+- `Ctrl + P`: Export Postman collection (📋)
+- `Ctrl + H`: Show help & shortcuts (❓)
+- `ESC`: Close any open modal
 
 ---
 
@@ -194,11 +233,16 @@ x-mock-type: success
 
 ## 🔮 Roadmap & Future Enhancements
 
-### 📈 **Next Priority Features**
-- [ ] 🔗 **Export/Import**: Mock collections export/import functionality
-- [ ] 📋 **Postman Integration**: Auto-generate Postman collections from saved mocks
-- [ ] 🔧 **HTTPie Commands**: Generate corresponding HTTPie test commands
-- [ ] 📊 **Analytics Dashboard**: Mock usage statistics and hit tracking
+### 📈 **Recently Completed Features**
+- [x] 🔗 **Export/Import**: Complete mock collections export/import functionality with JSON format
+- [x] 📋 **Postman Integration**: Auto-generate Postman collections from saved mocks with example responses
+- [x] 🔧 **HTTPie Commands**: Generate corresponding HTTPie test commands with proper syntax
+- [x] ⌨️ **Keyboard Shortcuts**: Full keyboard navigation support (Ctrl+E, Ctrl+I, Ctrl+P, etc.)
+
+### 📊 **Next Priority Features**
+- [ ] � **Analytics Dashboard**: Mock usage statistics and hit tracking
+- [ ] � **Mock Versioning**: Version control for mock collections
+- [ ] � **Advanced Search**: Search mocks by content, headers, and response data
 
 ### 🚀 **Advanced Features**
 - [ ] ✨ **Wildcard Paths**: Support for dynamic path matching (e.g., `/api/user/*`)

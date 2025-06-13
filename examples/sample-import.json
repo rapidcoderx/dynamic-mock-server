@@ -1,0 +1,57 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2025-06-13T12:00:00.000Z",
+  "totalMocks": 3,
+  "mocks": [
+    {
+      "id": "sample-1",
+      "name": "getUserSuccess",
+      "method": "GET",
+      "path": "/api/user",
+      "headers": {
+        "x-mock-type": "success"
+      },
+      "response": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "active": true
+      },
+      "statusCode": 200,
+      "exported": true
+    },
+    {
+      "id": "sample-2",
+      "name": "getUserError",
+      "method": "GET",
+      "path": "/api/user",
+      "headers": {
+        "x-mock-type": "error"
+      },
+      "response": {
+        "error": "User not found",
+        "code": "USER_NOT_FOUND"
+      },
+      "statusCode": 404,
+      "exported": true
+    },
+    {
+      "id": "sample-3",
+      "name": "createUser",
+      "method": "POST",
+      "path": "/api/user",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "response": {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "active": true,
+        "created": "2025-06-13T12:00:00.000Z"
+      },
+      "statusCode": 201,
+      "exported": true
+    }
+  ]
+}

@@ -199,4 +199,253 @@ router.put('/:id', (req, res) => {
     }
 });
 
+// GET /mocks/export - Export all mocks as JSON
+router.get('/export', (req, res) => {
+    const exportData = {
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        totalMocks: mockStore.length,
+        mocks: mockStore.map(mock => ({
+            ...mock,
+            // Add metadata for import validation
+            exported: true
+        }))
+    };
+    
+    logger.info(`📤 Exporting ${mockStore.length} mocks`);
+    res.json(exportData);
+});
+
+// POST /mocks/import - Import mocks from JSON
+router.post('/import', (req, res) => {
+    try {
+        const { mocks, replaceExisting = false } = req.body;
+        
+        if (!mocks || !Array.isArray(mocks)) {
+            return res.status(400).json({ error: 'Invalid import data: mocks array is required' });
+        }
+        
+        const importedMocks = [];
+        const errors = [];
+        let duplicatesSkipped = 0;
+        
+        mocks.forEach((mockData, index) => {
+            try {
+                const { name, method, path, headers = {}, response, statusCode = 200 } = mockData;
+                
+                if (!name || !method || !path || !response) {
+                    errors.push(`Mock ${index + 1}: Missing required fields`);
+                    return;
+                }
+                
+                const newMock = {
+                    id: uuidv4(),
+                    name,
+                    method: method.toUpperCase(),
+                    path,
+                    headers,
+                    response,
+                    statusCode
+                };
+                
+                // Check for uniqueness unless replacing
+                if (!replaceExisting && !isUniqueMock(newMock, mockStore)) {
+                    duplicatesSkipped++;
+                    return;
+                }
+                
+                // If replacing existing, remove duplicates first
+                if (replaceExisting) {
+                    const existingIndex = mockStore.findIndex(existing => 
+                        existing.method === newMock.method && 
+                        existing.path === newMock.path &&
+                        JSON.stringify(existing.headers) === JSON.stringify(newMock.headers)
+                    );
+                    if (existingIndex !== -1) {
+                        mockStore.splice(existingIndex, 1);
+                    }
+                }
+                
+                mockStore.push(newMock);
+                importedMocks.push(newMock);
+                
+            } catch (err) {
+                errors.push(`Mock ${index + 1}: ${err.message}`);
+            }
+        });
+        
+        saveMocks(mockStore);
+        
+        logger.info(`📥 Imported ${importedMocks.length} mocks, ${duplicatesSkipped} duplicates skipped, ${errors.length} errors`);
+        
+        res.json({
+            success: true,
+            imported: importedMocks.length,
+            duplicatesSkipped,
+            errors,
+            totalMocks: mockStore.length,
+            importedMocks: importedMocks.map(m => ({ id: m.id, name: m.name, method: m.method, path: m.path }))
+        });
+        
+    } catch (err) {
+        logger.error(`❌ Error importing mocks: ${err.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// GET /mocks/export/postman - Generate Postman collection
+router.get('/export/postman', (req, res) => {
+    try {
+        const baseUrl = req.query.baseUrl || `http://localhost:${process.env.PORT || 8080}`;
+        
+        const collection = {
+            info: {
+                name: "Dynamic Mock Server Collection",
+                description: "Auto-generated Postman collection from mock server",
+                version: "1.0.0",
+                schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+            },
+            variable: [
+                {
+                    key: "baseUrl",
+                    value: baseUrl,
+                    type: "string"
+                }
+            ],
+            item: mockStore.map(mock => {
+                const request = {
+                    name: mock.name,
+                    request: {
+                        method: mock.method,
+                        header: Object.entries(mock.headers || {}).map(([key, value]) => ({
+                            key,
+                            value: value.toString(),
+                            type: "text"
+                        })),
+                        url: {
+                            raw: `{{baseUrl}}${mock.path}`,
+                            host: ["{{baseUrl}}"],
+                            path: mock.path.split('/').filter(Boolean)
+                        }
+                    },
+                    response: [
+                        {
+                            name: "Example Response",
+                            originalRequest: {
+                                method: mock.method,
+                                header: Object.entries(mock.headers || {}).map(([key, value]) => ({
+                                    key,
+                                    value: value.toString()
+                                })),
+                                url: {
+                                    raw: `{{baseUrl}}${mock.path}`,
+                                    host: ["{{baseUrl}}"],
+                                    path: mock.path.split('/').filter(Boolean)
+                                }
+                            },
+                            status: `${mock.statusCode || 200}`,
+                            code: mock.statusCode || 200,
+                            header: [
+                                {
+                                    key: "Content-Type",
+                                    value: "application/json"
+                                }
+                            ],
+                            body: JSON.stringify(mock.response, null, 2)
+                        }
+                    ]
+                };
+                
+                // Add request body for POST/PUT methods
+                if (['POST', 'PUT', 'PATCH'].includes(mock.method)) {
+                    request.request.body = {
+                        mode: "raw",
+                        raw: JSON.stringify({
+                            // Example request body
+                            example: "Add your request body here"
+                        }, null, 2),
+                        options: {
+                            raw: {
+                                language: "json"
+                            }
+                        }
+                    };
+                }
+                
+                return request;
+            })
+        };
+        
+        logger.info(`📋 Generated Postman collection with ${mockStore.length} requests`);
+        res.json(collection);
+        
+    } catch (err) {
+        logger.error(`❌ Error generating Postman collection: ${err.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// GET /mocks/export/httpie - Generate HTTPie commands
+router.get('/export/httpie', (req, res) => {
+    try {
+        const baseUrl = req.query.baseUrl || `http://localhost:${process.env.PORT || 8080}`;
+        
+        const commands = mockStore.map(mock => {
+            let command = `http ${mock.method}`;
+            
+            // Add URL
+            command += ` ${baseUrl}${mock.path}`;
+            
+            // Add headers
+            Object.entries(mock.headers || {}).forEach(([key, value]) => {
+                command += ` ${key}:"${value}"`;
+            });
+            
+            // Add request body for POST/PUT methods
+            if (['POST', 'PUT', 'PATCH'].includes(mock.method)) {
+                command += ` Content-Type:application/json`;
+                command += ` example="Add your request data here"`;
+            }
+            
+            return {
+                name: mock.name,
+                method: mock.method,
+                path: mock.path,
+                command: command,
+                description: `Test ${mock.name} - Expected status: ${mock.statusCode || 200}`,
+                expectedResponse: mock.response
+            };
+        });
+        
+        const script = {
+            info: {
+                title: "Dynamic Mock Server HTTPie Commands",
+                description: "Auto-generated HTTPie commands for testing mock endpoints",
+                version: "1.0.0",
+                generated: new Date().toISOString()
+            },
+            baseUrl,
+            totalCommands: commands.length,
+            commands,
+            usage: [
+                "# Copy and paste these commands to test your mocks:",
+                "# Install HTTPie: pip install httpie",
+                "# Run individual commands or create a test script",
+                "",
+                "# Example usage:",
+                "# " + (commands[0]?.command || "http GET http://localhost:8080/api/example"),
+                "",
+                "# For batch testing, save commands to a file and run them sequentially"
+            ]
+        };
+        
+        logger.info(`🔧 Generated ${commands.length} HTTPie commands`);
+        res.json(script);
+        
+    } catch (err) {
+        logger.error(`❌ Error generating HTTPie commands: ${err.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 module.exports = { router, mockStore };
