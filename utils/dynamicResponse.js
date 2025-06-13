@@ -30,8 +30,15 @@ class DynamicResponseGenerator {
         // Apply response delay if configured
         await this.applyDelay(mock.delay);
         
-        // Process dynamic values in response
-        const processedResponse = this.processDynamicValues(mock.response, request);
+        // Process dynamic values only if enabled for this mock
+        let processedResponse;
+        if (mock.dynamic !== false) {
+            // Process dynamic values in response (enabled by default for backward compatibility)
+            processedResponse = this.processDynamicValues(mock.response, request);
+        } else {
+            // Return response as-is without processing dynamic placeholders
+            processedResponse = mock.response;
+        }
         
         const processingTime = Date.now() - startTime;
         
@@ -40,7 +47,8 @@ class DynamicResponseGenerator {
             metadata: {
                 processingTime,
                 generated: new Date().toISOString(),
-                dynamicValues: this.hasDynamicValues(mock.response)
+                dynamicValues: mock.dynamic !== false ? this.hasDynamicValues(mock.response) : false,
+                dynamicEnabled: mock.dynamic !== false
             }
         };
     }
@@ -111,7 +119,15 @@ class DynamicResponseGenerator {
      */
     processDynamicValues(response, request = {}) {
         if (typeof response === 'string') {
-            return this.processString(response, request);
+            // Check if the entire string is a single placeholder
+            const singlePlaceholderMatch = response.match(/^\{\{([^}]+)\}\}$/);
+            if (singlePlaceholderMatch) {
+                // Return the actual value (could be array, object, etc.)
+                return this.generateValue(singlePlaceholderMatch[1].trim(), request);
+            } else {
+                // Process as string template
+                return this.processString(response, request);
+            }
         } else if (Array.isArray(response)) {
             return response.map(item => this.processDynamicValues(item, request));
         } else if (response && typeof response === 'object') {
@@ -248,12 +264,12 @@ class DynamicResponseGenerator {
                 return request.method || 'GET';
             
             // Custom functions
-            case 'oneOf':
+            case 'oneof':
                 const options = params.join(':').split(',').map(s => s.trim());
                 return faker.helpers.arrayElement(options);
             case 'boolean':
                 return faker.datatype.boolean();
-            case 'arrayOf':
+            case 'arrayof':
                 const count = params[0] ? parseInt(params[0]) : 3;
                 const itemType = params[1] || 'word';
                 return Array.from({ length: count }, () => 

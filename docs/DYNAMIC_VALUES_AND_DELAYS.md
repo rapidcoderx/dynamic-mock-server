@@ -14,6 +14,40 @@ The Dynamic Mock Server supports **realistic data simulation** through:
 
 ---
 
+## ⚙️ Enabling Dynamic Values
+
+### Dynamic Value Generation Control
+
+When creating or editing a mock, you can control whether dynamic placeholders are processed:
+
+**Location**: ⚙️ Advanced Options → "Enable dynamic value generation" checkbox
+
+#### ✅ When ENABLED (Checkbox Checked)
+- Placeholders like `{{name}}`, `{{email}}`, `{{uuid}}` are replaced with real generated values
+- Each API call returns different realistic data
+- Perfect for testing with varied, lifelike data
+
+**Example:**
+```json
+// Template: {"user": "{{name}}", "email": "{{email}}"}
+// Response: {"user": "Alice Johnson", "email": "alice.johnson@example.com"}
+```
+
+#### ☐ When DISABLED (Checkbox Unchecked)  
+- Placeholders are returned as literal strings without processing
+- Responses are static and predictable
+- Useful for debugging template syntax or when exact responses are needed
+
+**Example:**
+```json
+// Template: {"user": "{{name}}", "email": "{{email}}"}  
+// Response: {"user": "{{name}}", "email": "{{email}}"}
+```
+
+**💡 Pro Tip**: Use the Preview Generator (📋 Show Placeholders → Preview section) to test your templates before saving!
+
+---
+
 ## 🏗️ Dynamic Value Placeholders
 
 ### 🕐 Time & Date Placeholders

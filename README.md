@@ -254,6 +254,50 @@ GET http://localhost:8080/api/user
 x-mock-type: success
 ```
 
+### 🎲 Dynamic Values & Response Delays
+
+#### Enabling Dynamic Value Generation
+
+When creating or editing a mock, you can control whether dynamic value processing is enabled:
+
+1. **Enable Dynamic Values Checkbox**: 
+   - Located in "⚙️ Advanced Options" section
+   - **Checked (✓)**: Placeholders like `{{name}}`, `{{email}}`, `{{uuid}}` will be replaced with real values
+   - **Unchecked (☐)**: Placeholders will be returned as-is in the response
+
+2. **Behavior Examples**:
+
+   **With Dynamic Values ENABLED** (checkbox checked):
+   ```json
+   // Your template: {"user": "{{name}}", "id": "{{uuid}}"}
+   // Response: {"user": "Alice Johnson", "id": "a1b2c3d4-e5f6-7890"}
+   ```
+
+   **With Dynamic Values DISABLED** (checkbox unchecked):
+   ```json
+   // Your template: {"user": "{{name}}", "id": "{{uuid}}"}
+   // Response: {"user": "{{name}}", "id": "{{uuid}}"}
+   ```
+
+3. **When to Use Each Mode**:
+   - **Enable**: For realistic testing with varied data
+   - **Disable**: When you need exact template responses or are debugging placeholder syntax
+
+4. **Available Placeholders**: 60+ options including:
+   - `{{name}}`, `{{email}}`, `{{phone}}` - Person data
+   - `{{uuid}}`, `{{timestamp}}`, `{{number:1:100}}` - IDs & numbers
+   - `{{oneOf:success,error,pending}}` - Random selection
+   - `{{arrayOf:3:word}}` - Arrays of generated values
+
+Click "📋 Show Placeholders" in the UI to see the complete list with examples.
+
+#### Response Delays
+
+Configure realistic network delays in Advanced Options:
+- **Fixed**: Consistent delay (e.g., 500ms)
+- **Random**: Variable delay within range (e.g., 200-800ms)
+- **Network**: Simulates real network conditions
+
 ### 🔄 Export/Import & Test Generation
 
 #### Export Mock Collections

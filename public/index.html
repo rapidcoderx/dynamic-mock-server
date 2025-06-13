@@ -150,77 +150,1875 @@
             background: rgba(59, 130, 246, 0.1);
         }
 
-        /* Modal styling to fix centering */
-        .modal-overlay {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
         }
 
-        .modal-overlay.hidden {
-            display: none;
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         }
 
-        /* Tooltip styling for buttons */
-        .liquid-button {
-            position: relative;
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
         }
 
-        .liquid-button:hover::after {
-            content: attr(title);
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
             padding: 0.5rem 0.75rem;
             border-radius: 8px;
-            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
             font-weight: 500;
-            white-space: nowrap;
-            z-index: 1000;
-            pointer-events: none;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
             opacity: 0;
-            animation: tooltipFadeIn 0.2s ease-in-out forwards;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        .liquid-button:hover::before {
-            content: '';
-            position: absolute;
-            bottom: 110%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 5px solid transparent;
-            border-top-color: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            pointer-events: none;
-            opacity: 0;
-            animation: tooltipFadeIn 0.2s ease-in-out forwards;
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
         }
 
-        @keyframes tooltipFadeIn {
-            from { opacity: 0; transform: translateX(-50%) translateY(5px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
         }
 
-        /* Custom scrollbar for help modal */
-        .help-scroll::-webkit-scrollbar {
-            width: 4px;
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
         }
 
-        .help-scroll::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
         }
 
-        .help-scroll::-webkit-scrollbar-thumb {
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
-            border-radius: 2px;
         }
 
-        .help-scroll::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit { 
+            color: #fcd34d; 
+            border-color: rgba(252, 211, 77, 0.4);
+            background: rgba(252, 211, 77, 0.1);
+        }
+        .btn-edit:hover { 
+            background: rgba(252, 211, 77, 0.2); 
+            color: #fbbf24;
+        }
+        
+        .btn-delete { 
+            color: #fca5a5; 
+            border-color: rgba(252, 165, 165, 0.4);
+            background: rgba(252, 165, 165, 0.1);
+        }
+        .btn-delete:hover { 
+            background: rgba(252, 165, 165, 0.2); 
+            color: #f87171;
+        }
+        
+        .btn-view { 
+            color: #93c5fd; 
+            border-color: rgba(147, 197, 253, 0.4);
+            background: rgba(147, 197, 253, 0.1);
+        }
+        .btn-view:hover { 
+            background: rgba(147, 197, 253, 0.2); 
+            color: #60a5fa;
+        }
+
+        /* Smart Notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .notification {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+            cursor: pointer;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Enhanced Preview Generator Styles */
+        .preview-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+        }
+
+        .preview-input, .preview-output {
+            transition: all 0.3s ease;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .preview-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .preview-output {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Scrollbar for Preview Output */
+        .preview-output::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .preview-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .preview-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Improved Button Styles */
+        .action-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
@@ -327,28 +2125,33 @@
 
     <!-- Main Modal -->
     <div id="mockModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
-        <div class="glass rounded-xl p-6 w-full max-w-4xl text-white relative">
+        <div class="modal-container flex items-center justify-center min-h-full p-4">
+            <div class="glass rounded-xl p-6 w-full max-w-4xl text-white relative">
             <button id="closeModal" class="absolute top-2 right-4 text-xl">&times;</button>
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold">⊞ Registered Mocks</h2>
                 <button id="refreshMocks" class="absolute top-2 right-12 text-xl" title="Refresh Mocks">⟲</button>
             </div>
             <div id="mockTable" class="space-y-3 max-h-[60vh] overflow-y-auto"></div>
+            </div>
         </div>
     </div>
 
     <!-- Detail Modal -->
     <div id="mockDetailModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
-        <div class="glass rounded-xl p-6 w-full max-w-2xl text-white relative">
+        <div class="modal-container flex items-center justify-center min-h-full p-4">
+            <div class="glass rounded-xl p-6 w-full max-w-2xl text-white relative">
             <button id="closeDetailModal" class="absolute top-2 right-4 text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4">⊟ Mock Details</h2>
             <div id="mockDetailContent" class="space-y-2 max-h-[70vh] overflow-y-auto text-sm font-mono text-gray-200"></div>
+            </div>
         </div>
     </div>
 
     <!-- Edit Modal -->
     <div id="editMockModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
-        <div class="glass rounded-xl p-6 w-full max-w-2xl text-white relative">
+        <div class="modal-container flex items-center justify-center min-h-full p-4">
+            <div class="glass rounded-xl p-6 w-full max-w-2xl text-white relative">
             <button id="closeEditModal" class="absolute top-2 right-4 text-xl">&times;</button>
             <h2 class="text-2xl font-bold mb-4">✎ Edit Mock</h2>
             <form id="editMockForm" class="space-y-4">
@@ -414,12 +2217,14 @@
                     <button type="button" id="cancelEdit" class="liquid-button flex-1 bg-red-600">✕ Cancel</button>
                 </div>
             </form>
+            </div>
         </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
     <div id="deleteConfirmModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
-        <div class="glass rounded-xl p-6 w-full max-w-md text-white relative">
+        <div class="modal-container flex items-center justify-center min-h-full p-4">
+            <div class="glass rounded-xl p-6 w-full max-w-md text-white relative">
             <h2 class="text-xl font-bold mb-4">✕ Confirm Delete</h2>
             <p class="mb-4">Are you sure you want to delete this mock?</p>
             <div id="deletePreview" class="glass p-3 rounded mb-4 text-sm"></div>
@@ -427,12 +2232,14 @@
                 <button id="confirmDelete" class="liquid-button flex-1 bg-red-600">✕ Delete</button>
                 <button id="cancelDelete" class="liquid-button flex-1">◂ Cancel</button>
             </div>
+            </div>
         </div>
     </div>
 
     <!-- Import Mocks Modal -->
     <div id="importModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
-        <div class="glass rounded-xl p-6 w-full max-w-2xl text-white relative">
+        <div class="modal-container flex items-center justify-center min-h-full p-4">
+            <div class="glass rounded-xl p-6 w-full max-w-2xl text-white relative">
             <button id="closeImportModal" class="absolute top-2 right-4 text-xl">&times;</button>
             <h2 class="text-xl font-bold mb-4">📥 Import Mock Collection</h2>
             
@@ -468,12 +2275,14 @@
                     <button id="importCancel" class="liquid-button flex-1">◂ Cancel</button>
                 </div>
             </div>
+            </div>
         </div>
     </div>
 
     <!-- Help Modal -->
     <div id="helpModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
-        <div class="glass rounded-xl p-6 w-full max-w-xl max-h-[90vh] text-white relative overflow-hidden flex flex-col">
+        <div class="modal-container flex items-center justify-center min-h-full p-4">
+            <div class="glass rounded-xl p-6 w-full max-w-xl max-h-[90vh] text-white relative overflow-hidden flex flex-col">
             <button id="closeHelpModal" class="absolute top-3 right-4 text-xl hover:text-red-300">&times;</button>
             
             <!-- Header -->
@@ -611,12 +2420,14 @@
             <div class="flex justify-center mt-4 pt-3 border-t border-white/20">
                 <button id="closeHelpBtn" class="liquid-button px-4 py-1 text-sm">Got it!</button>
             </div>
+            </div>
         </div>
     </div>
 
     <!-- Dynamic Placeholders Modal -->
     <div id="placeholdersModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
-        <div class="glass rounded-xl p-6 w-full max-w-4xl max-h-[90vh] text-white relative overflow-hidden flex flex-col">
+        <div class="modal-container flex items-center justify-center min-h-full p-4">
+            <div class="glass rounded-xl p-6 w-full max-w-4xl max-h-[90vh] text-white relative overflow-hidden flex flex-col">
             <button id="closePlaceholdersModal" class="absolute top-3 right-4 text-xl hover:text-red-300">&times;</button>
             
             <!-- Header -->
@@ -632,23 +2443,90 @@
                 </div>
                 
                 <!-- Preview Section -->
-                <div class="border-t border-white/20 pt-4 mt-6">
-                    <h3 class="text-sm font-semibold mb-3 text-green-300 flex items-center gap-1">
+                <div class="border-t border-white/20 pt-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-4 text-green-300 flex items-center gap-2">
                         <span>👁️</span> Preview Generator
+                        <span class="text-xs font-normal text-gray-400">Test your dynamic templates live</span>
                     </h3>
-                    <div class="glass p-4 rounded space-y-3">
-                        <div>
-                            <label class="block text-xs text-gray-300 mb-1">Test Response (use placeholders):</label>
-                            <textarea id="previewInput" placeholder='{"message": "Hello {{name}}", "timestamp": "{{timestamp}}", "id": "{{uuid}}"}'
-                                class="glass p-3 rounded w-full h-20 text-xs font-mono"></textarea>
+                    
+                    <div class="enhanced-glass p-6 rounded-xl space-y-6">
+                        <!-- Input Section -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-200">Test Response Template</label>
+                                <div class="flex gap-2">
+                                    <button id="insertExample" class="action-button text-xs px-3 py-1">
+                                        📄 Load Example
+                                    </button>
+                                    <button id="clearInput" class="action-button text-xs px-3 py-1 bg-red-500/20 border-red-400/30">
+                                        🗑️ Clear
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea id="previewInput" 
+                                placeholder='{\n  "user": {\n    "id": "{{uuid}}",\n    "name": "{{name}}",\n    "email": "{{email}}",\n    "created": "{{timestamp}}"\n  },\n  "status": "{{oneOf:active,pending,inactive}}",\n  "score": "{{number:1:100}}"\n}'
+                                class="preview-input glass p-4 rounded-lg w-full h-40 text-sm font-mono resize-y border border-white/20 focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20 transition-all"
+                                spellcheck="false"></textarea>
+                            <div class="text-xs text-gray-400 flex items-center gap-2">
+                                <span>💡</span>
+                                <span>Use placeholders like {{name}}, {{email}}, {{timestamp}}, {{number:1:100}}, etc.</span>
+                            </div>
                         </div>
-                        <div class="flex gap-2">
-                            <button id="generatePreview" class="action-button text-xs">🔄 Generate Preview</button>
-                            <button id="insertExample" class="action-button text-xs">📄 Load Example</button>
+
+                        <!-- Action Button -->
+                        <div class="flex justify-center">
+                            <button id="generatePreview" 
+                                class="liquid-button px-8 py-3 text-sm font-semibold bg-gradient-to-r from-green-500/20 to-blue-500/20 border-green-400/40 hover:from-green-500/30 hover:to-blue-500/30 transition-all duration-300">
+                                🔄 Generate Preview
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-xs text-gray-300 mb-1">Generated Output:</label>
-                            <pre id="previewOutput" class="glass p-3 rounded w-full h-20 text-xs font-mono text-green-200 overflow-auto">Click "Generate Preview" to see output...</pre>
+
+                        <!-- Output Section -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-200">Generated Output</label>
+                                <div class="flex gap-2">
+                                    <button id="copyOutput" class="action-button text-xs px-3 py-1 bg-blue-500/20 border-blue-400/30">
+                                        � Copy Result
+                                    </button>
+                                    <button id="formatOutput" class="action-button text-xs px-3 py-1">
+                                        ✨ Format JSON
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <pre id="previewOutput" 
+                                    class="preview-output glass p-4 rounded-lg w-full h-48 text-sm font-mono text-green-200 overflow-auto border border-white/20 whitespace-pre-wrap"
+                                    style="line-height: 1.5;">Click "Generate Preview" to see dynamic output...</pre>
+                                <div id="previewStatus" class="absolute top-2 right-2 text-xs opacity-0 transition-opacity">
+                                    <span class="bg-green-500/20 text-green-300 px-2 py-1 rounded border border-green-400/30">
+                                        ✓ Generated
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-400 flex items-center gap-2">
+                                <span>🎯</span>
+                                <span>Each generation produces different values - refresh to see variety</span>
+                            </div>
+                        </div>
+
+                        <!-- Quick Examples -->
+                        <div class="border-t border-white/10 pt-4">
+                            <h4 class="text-sm font-medium text-gray-300 mb-2">Quick Examples:</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                                <button class="example-btn glass p-2 rounded text-left hover:bg-white/10 transition-colors"
+                                    data-example='{"name": "{{name}}", "email": "{{email}}"}'>
+                                    👤 User Data
+                                </button>
+                                <button class="example-btn glass p-2 rounded text-left hover:bg-white/10 transition-colors"
+                                    data-example='{"products": "{{arrayOf:3:word}}", "total": "{{number:10:100}}"}'>
+                                    🛍️ Product List
+                                </button>
+                                <button class="example-btn glass p-2 rounded text-left hover:bg-white/10 transition-colors"
+                                    data-example='{"timestamp": "{{timestamp}}", "status": "{{oneOf:success,error}}"}'>
+                                    📊 API Response
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -657,6 +2535,7 @@
             <!-- Footer -->
             <div class="flex justify-center mt-4 pt-3 border-t border-white/20">
                 <button id="closePlaceholdersBtn" class="liquid-button px-4 py-1 text-sm">Close</button>
+            </div>
             </div>
         </div>
     </div>
@@ -763,15 +2642,21 @@
                 const placeholdersContent = document.getElementById('placeholdersContent');
                 try {
                     const res = await fetch(`${API_PREFIX}/mocks/placeholders`);
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
                     const data = await res.json();
                     
                     let content = '';
-                    for (const [category, placeholders] of Object.entries(data.placeholders)) {
+                    // Use data.categories since that's what the backend returns
+                    const placeholders = data.categories || data.placeholders || {};
+                    
+                    for (const [category, placeholderList] of Object.entries(placeholders)) {
                         content += `
                             <div>
                                 <h4 class="text-sm font-semibold mb-2 text-blue-300">${category}</h4>
                                 <div class="glass p-3 rounded space-y-1">
-                                    ${placeholders.map(p => `
+                                    ${placeholderList.map(p => `
                                         <div class="flex items-center justify-between text-xs">
                                             <code class="text-green-300">${p}</code>
                                             <button onclick="copyToClipboard('${p}')" class="text-gray-400 hover:text-white px-1">📋</button>
@@ -784,7 +2669,8 @@
                     
                     placeholdersContent.innerHTML = content;
                 } catch (err) {
-                    placeholdersContent.innerHTML = '<div class="text-red-300">Failed to load placeholders</div>';
+                    console.error('Error loading placeholders:', err);
+                    placeholdersContent.innerHTML = `<div class="text-red-300">Failed to load placeholders: ${err.message}</div>`;
                 }
             }
 
@@ -1291,12 +3177,18 @@
 
                 // Preview functionality
                 generatePreviewBtn.onclick = async () => {
+                    const statusEl = document.getElementById('previewStatus');
                     try {
                         const input = previewInput.value.trim();
                         if (!input) {
                             previewOutput.textContent = 'Please enter some content to preview';
                             return;
                         }
+
+                        // Show loading state
+                        previewOutput.textContent = 'Generating preview...';
+                        generatePreviewBtn.textContent = '⏳ Generating...';
+                        generatePreviewBtn.disabled = true;
 
                         const res = await fetch(`${API_PREFIX}/mocks/preview`, {
                             method: 'POST',
@@ -1307,11 +3199,18 @@
                         if (res.ok) {
                             const data = await res.json();
                             previewOutput.textContent = JSON.stringify(data.processed, null, 2);
+                            
+                            // Show success status
+                            statusEl.style.opacity = '1';
+                            setTimeout(() => statusEl.style.opacity = '0', 2000);
                         } else {
                             previewOutput.textContent = 'Preview failed - check your JSON syntax';
                         }
                     } catch (err) {
                         previewOutput.textContent = `Error: ${err.message}`;
+                    } finally {
+                        generatePreviewBtn.textContent = '🔄 Generate Preview';
+                        generatePreviewBtn.disabled = false;
                     }
                 };
 
@@ -1332,6 +3231,47 @@
                     };
                     previewInput.value = JSON.stringify(example, null, 2);
                 };
+
+                // Clear input
+                const clearInputBtn = document.getElementById('clearInput');
+                clearInputBtn.onclick = () => {
+                    previewInput.value = '';
+                    previewOutput.textContent = 'Click "Generate Preview" to see dynamic output...';
+                };
+
+                // Copy output
+                const copyOutputBtn = document.getElementById('copyOutput');
+                copyOutputBtn.onclick = () => {
+                    const text = previewOutput.textContent;
+                    if (text && text !== 'Click "Generate Preview" to see dynamic output...') {
+                        copyToClipboard(text);
+                    } else {
+                        showNotification('No output to copy - generate a preview first', 'info');
+                    }
+                };
+
+                // Format output
+                const formatOutputBtn = document.getElementById('formatOutput');
+                formatOutputBtn.onclick = () => {
+                    try {
+                        const text = previewOutput.textContent;
+                        if (text && text !== 'Click "Generate Preview" to see dynamic output...') {
+                            const parsed = JSON.parse(text);
+                            previewOutput.textContent = JSON.stringify(parsed, null, 2);
+                        }
+                    } catch (err) {
+                        showNotification('Cannot format - invalid JSON', 'error');
+                    }
+                };
+
+                // Quick example buttons
+                document.querySelectorAll('.example-btn').forEach(btn => {
+                    btn.onclick = () => {
+                        const example = btn.getAttribute('data-example');
+                        const formatted = JSON.stringify(JSON.parse(example), null, 2);
+                        previewInput.value = formatted;
+                    };
+                });
             }
 
             // Load dynamic placeholder options
