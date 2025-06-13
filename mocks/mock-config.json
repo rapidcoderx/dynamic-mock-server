@@ -1,0 +1,15 @@
+[
+  {
+    "id": "cddddeab-5141-4931-a6dc-971bb52cce94",
+    "name": "test-hello",
+    "method": "GET",
+    "path": "/api/test-hello",
+    "headers": {
+      "x-env": "dev"
+    },
+    "response": {
+      "message": "Hello from mock"
+    },
+    "statusCode": 200
+  }
+]

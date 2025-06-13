@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Mock Server</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #1f2937, #4b5563);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .enhanced-glass {
+            position: relative;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow:
+                inset 1px 1px 2px rgba(255, 255, 255, 0.4),
+                inset -1px -1px 2px rgba(0, 0, 0, 0.1),
+                0 10px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .liquid-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow:
+                inset 1px 1px 1px rgba(255, 255, 255, 0.3),
+                0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .liquid-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6">
+
+    <div class="enhanced-glass shadow-lg p-8 w-full max-w-3xl text-white">
+        <h1 class="text-3xl font-bold mb-4 text-center flex items-center justify-center gap-2">
+            <img src="icon.svg" class="w-7 h-7 opacity-90" alt="mock server icon" />
+            Dynamic Mock Server
+        </h1>
+
+        <!-- Form: Define New Mock -->
+        <form id="mockForm" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" name="name" placeholder="Unique mock name (e.g., getUserDev)" required
+                    class="glass p-2 rounded w-full" />
+                <input type="text" name="path" placeholder="/api/user" required class="glass p-2 rounded w-full" />
+                <select name="method" class="glass p-2 rounded w-full col-span-2">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+            <input type="text" name="headers" placeholder='Header JSON (e.g., {"x-mock-type":"success"})'
+                class="glass p-2 rounded w-full" />
+            <textarea name="response" placeholder="Mock response body (JSON)"
+                class="glass p-2 rounded w-full h-32"></textarea>
+        </form>
+
+        <!-- Buttons -->
+        <div class="flex justify-between items-center gap-4 mt-4">
+            <button type="submit" form="mockForm" class="liquid-button w-1/2 text-center">
+                ➕ Add Mock
+            </button>
+            <button type="button" id="viewMocksBtn" class="liquid-button w-1/2 text-center">
+                👁️ View Mocks
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Modal -->
+    <div id="mockModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="glass rounded-xl p-6 w-full max-w-3xl text-white relative">
+            <button id="closeModal" class="absolute top-2 right-4 text-xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4">📦 Registered Mocks</h2>
+            <div id="mockTable" class="space-y-3 max-h-[60vh] overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="mockDetailModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="glass rounded-xl p-6 w-full max-w-2xl text-white relative">
+            <button id="closeDetailModal" class="absolute top-2 right-4 text-xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4">📄 Mock Details</h2>
+            <div id="mockDetailContent" class="space-y-2 max-h-[70vh] overflow-y-auto text-sm font-mono text-gray-200"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let API_PREFIX = '/api';
+
+            async function initApp() {
+                try {
+                    const res = await fetch('/api/config');
+                    const config = await res.json();
+                    API_PREFIX = config.apiPrefix || API_PREFIX;
+                } catch (err) {
+                    console.warn("Using default API_PREFIX due to config fetch error:", err);
+                }
+
+                setupForm();
+                setupModal();
+            }
+
+            function setupForm() {
+                const form = document.getElementById('mockForm');
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const name = form.name.value.trim();
+                    const path = form.path.value.trim();
+                    const method = form.method.value;
+                    const headersRaw = form.headers.value;
+                    const responseRaw = form.response.value;
+
+                    let headers, response;
+                    try {
+                        headers = headersRaw ? JSON.parse(headersRaw) : {};
+                        response = JSON.parse(responseRaw);
+                    } catch (err) {
+                        alert('❌ Invalid JSON in headers or response!');
+                        return;
+                    }
+
+                    const payload = { name, path, method, headers, response };
+
+                    const res = await fetch(`${API_PREFIX}/mocks`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        form.reset();
+                        alert('✅ Mock created');
+                    } else {
+                        const error = await res.json();
+                        alert('❌ Error: ' + error.error);
+                    }
+                });
+            }
+
+            function setupModal() {
+                const viewBtn = document.getElementById('viewMocksBtn');
+                const modal = document.getElementById('mockModal');
+                const closeModal = document.getElementById('closeModal');
+                const mockTable = document.getElementById('mockTable');
+
+                viewBtn.onclick = async () => {
+                    const res = await fetch(`${API_PREFIX}/mocks`);
+                    const mocks = await res.json();
+                    renderMockList(mocks, mockTable);
+                    modal.classList.remove('hidden');
+                };
+
+                closeModal.onclick = () => {
+                    modal.classList.add('hidden');
+                };
+            }
+
+            function renderMockList(mocks, container) {
+                container.innerHTML = '';
+                if (mocks.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-300">No mocks registered yet.</p>';
+                    return;
+                }
+
+                mocks.forEach(mock => {
+                    const entry = document.createElement('div');
+                    entry.className = 'glass p-4 rounded-md';
+                    entry.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p><strong>${mock.name}</strong></p>
+                                <p class="text-sm text-gray-300">[${mock.method}] ${mock.path}</p>
+                            </div>
+                            <button class="text-cyan-400 underline text-sm" onclick='showMockDetail(${JSON.stringify(mock).replace(/`/g, "\`")})'>
+                                View
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(entry);
+                });
+            }
+
+            window.showMockDetail = function(mock) {
+                const modal = document.getElementById('mockDetailModal');
+                const content = document.getElementById('mockDetailContent');
+                const closeBtn = document.getElementById('closeDetailModal');
+
+                const safe = val => val !== undefined ? JSON.stringify(val, null, 2) : 'N/A';
+
+                content.innerHTML = `
+                    <div><strong>Name:</strong> ${mock.name}</div>
+                    <div><strong>Method:</strong> ${mock.method}</div>
+                    <div><strong>Path:</strong> ${mock.path}</div>
+                    <div><strong>Headers:</strong><pre class="bg-gray-800 p-2 rounded mt-1">${safe(mock.headers)}</pre></div>
+                    <div><strong>Response:</strong><pre class="bg-gray-800 p-2 rounded mt-1">${safe(mock.response)}</pre></div>
+                `;
+
+                modal.classList.remove('hidden');
+                closeBtn.onclick = () => modal.classList.add('hidden');
+            };
+
+            initApp();
+        });
+    </script>
+</body>
+
+</html>
