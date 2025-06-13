@@ -714,9 +714,8 @@ Configure realistic network delays in Advanced Options:
 - [ ] **Performance Metrics**: Response time tracking and performance insights
 - [ ] **Real-time Monitoring**: Live request monitoring with WebSocket updates
 
-### � **Advanced Matching**
+### 🔍 **Advanced Matching**
 - [ ] **Wildcard Paths**: Dynamic path matching (e.g., `/api/user/*/profile`)
-- [ ] **Query Parameters**: Query param-based mock resolution
 - [ ] **Body Matching**: Request body content-based routing
 - [ ] **Regex Support**: Regular expression matching for paths and headers
 
