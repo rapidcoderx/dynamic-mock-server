@@ -1,0 +1,470 @@
+{
+  "meta": {
+    "version": "0.1.0"
+  },
+  "spec": {
+    "info": {
+      "title": "Dynamic Mock Server API",
+      "description": "Complete API collection for the Dynamic Mock Server with examples for all CRUD operations including normal mocks, dynamic mocks, updates, deletions, and inquiries.",
+      "version": "1.0.0"
+    },
+    "variable": [
+      {
+        "name": "baseUrl",
+        "value": "http://localhost:3000",
+        "description": "Base URL for the Dynamic Mock Server"
+      },
+      {
+        "name": "apiPrefix",
+        "value": "/api/v1",
+        "description": "API prefix for the management endpoints"
+      }
+    ],
+    "requests": [
+      {
+        "name": "Health Check",
+        "description": "Check the health status of the mock server and its database connections.",
+        "url": "{{baseUrl}}{{apiPrefix}}/health",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Get Configuration",
+        "description": "Get current server configuration including storage type and available features.",
+        "url": "{{baseUrl}}{{apiPrefix}}/config",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "List All Mocks",
+        "description": "Retrieve all registered mocks in the system.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Create Static Mock",
+        "description": "Create a new static mock that returns a fixed response.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "name": "User Profile API",
+            "method": "GET",
+            "path": "/api/users/profile",
+            "headers": {
+              "Authorization": "Bearer token"
+            },
+            "response": {
+              "id": 1,
+              "name": "John Doe",
+              "email": "john@example.com",
+              "department": "Engineering",
+              "role": "Senior Developer"
+            },
+            "statusCode": 200,
+            "delay": null,
+            "dynamic": false
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Create Dynamic Mock",
+        "description": "Create a dynamic mock that generates different responses using faker.js placeholders.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "name": "Dynamic Product List",
+            "method": "GET",
+            "path": "/api/products",
+            "response": {
+              "products": [
+                {
+                  "id": "{{uuid}}",
+                  "name": "{{commerce.productName}}",
+                  "price": "{{commerce.price}}",
+                  "description": "{{lorem.sentences}}",
+                  "category": "{{commerce.department}}",
+                  "inStock": "{{datatype.boolean}}",
+                  "createdAt": "{{date.recent}}"
+                }
+              ],
+              "total": "{{datatype.number}}",
+              "page": 1,
+              "timestamp": "{{date.now}}"
+            },
+            "statusCode": 200,
+            "delay": 500,
+            "dynamic": true
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Create Mock with Header Matching",
+        "description": "Create a mock that matches requests based on specific headers.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "name": "Admin API",
+            "method": "GET",
+            "path": "/api/admin/users",
+            "headers": {
+              "Authorization": "Bearer admin-token",
+              "X-Admin-Role": "super"
+            },
+            "response": {
+              "users": [
+                {
+                  "id": 1,
+                  "name": "Admin User",
+                  "role": "admin"
+                },
+                {
+                  "id": 2,
+                  "name": "Regular User",
+                  "role": "user"
+                }
+              ],
+              "adminAccess": true
+            },
+            "statusCode": 200,
+            "dynamic": false
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Update Mock",
+        "description": "Update an existing mock by ID. Replace {mockId} with actual mock ID.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/{mockId}",
+        "method": "PUT",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "name": "Updated User Profile API",
+            "method": "GET",
+            "path": "/api/users/profile",
+            "headers": {
+              "Authorization": "Bearer token"
+            },
+            "response": {
+              "id": 1,
+              "name": "Jane Doe",
+              "email": "jane@example.com",
+              "department": "Engineering",
+              "role": "Tech Lead",
+              "lastLogin": "2024-01-15T10:30:00Z"
+            },
+            "statusCode": 200,
+            "delay": 100,
+            "dynamic": false
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Delete Mock",
+        "description": "Delete a mock by ID. Replace {mockId} with actual mock ID.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/{mockId}",
+        "method": "DELETE",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Test Mock Endpoint",
+        "description": "Test if a request would match any existing mocks without actually calling the mock.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/test",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "method": "GET",
+            "path": "/api/users/profile",
+            "headers": {
+              "Authorization": "Bearer token"
+            }
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Analyze Request",
+        "description": "Analyze what mocks would match a given request pattern.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/analyze",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": [
+          {
+            "name": "method",
+            "value": "GET",
+            "description": "HTTP method to analyze"
+          },
+          {
+            "name": "path",
+            "value": "/api/users/profile",
+            "description": "Path to analyze"
+          }
+        ]
+      },
+      {
+        "name": "Preview Dynamic Response",
+        "description": "Preview how a dynamic response template would be rendered.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/preview",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "response": {
+              "user": {
+                "id": "{{uuid}}",
+                "name": "{{person.fullName}}",
+                "email": "{{internet.email}}",
+                "avatar": "{{internet.avatar}}",
+                "joinDate": "{{date.past}}"
+              },
+              "stats": {
+                "loginCount": "{{datatype.number}}",
+                "lastActive": "{{date.recent}}"
+              }
+            }
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Get Available Placeholders",
+        "description": "Get a list of all available dynamic placeholders for creating dynamic mocks.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/placeholders",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Export All Mocks",
+        "description": "Export all mocks as a JSON file for backup or migration.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/export",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Import Mocks",
+        "description": "Import mocks from a JSON file or payload.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/import",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "mocks": [
+              {
+                "name": "Imported Mock 1",
+                "method": "GET",
+                "path": "/api/imported/endpoint1",
+                "response": {
+                  "message": "This is an imported mock",
+                  "data": "Sample data"
+                },
+                "statusCode": 200,
+                "dynamic": false
+              },
+              {
+                "name": "Imported Mock 2",
+                "method": "POST",
+                "path": "/api/imported/endpoint2",
+                "response": {
+                  "id": "{{uuid}}",
+                  "timestamp": "{{date.now}}",
+                  "success": true
+                },
+                "statusCode": 201,
+                "dynamic": true
+              }
+            ],
+            "overwrite": false
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Export Postman Collection",
+        "description": "Export all mocks as a Postman collection.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/export/postman",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Export HTTPie Collection",
+        "description": "Export all mocks as HTTPie commands.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks/export/httpie",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Call User Profile Mock",
+        "description": "Call the actual mock endpoint created for user profile. Note: This calls the mock directly, not the management API.",
+        "url": "{{baseUrl}}/api/users/profile",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer token"
+        },
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Call Dynamic Product List Mock",
+        "description": "Call the dynamic product list mock. Each call will return different data.",
+        "url": "{{baseUrl}}/api/products",
+        "method": "GET",
+        "headers": {},
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Call Mock with POST Data",
+        "description": "Example of calling a mock with POST data. Create this mock first using the management API.",
+        "url": "{{baseUrl}}/api/products",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "name": "New Product",
+            "price": 99.99,
+            "category": "Electronics"
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Call Admin API with Headers",
+        "description": "Call admin API with required headers for authentication and role validation.",
+        "url": "{{baseUrl}}/api/admin/users",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer admin-token",
+          "X-Admin-Role": "super"
+        },
+        "body": {
+          "type": "none"
+        },
+        "parameters": []
+      },
+      {
+        "name": "Create Mock with Delay and Custom Status",
+        "description": "Create a mock with response delay and custom HTTP status code.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "name": "Slow API Response",
+            "method": "GET",
+            "path": "/api/slow",
+            "response": {
+              "message": "This response was delayed",
+              "timestamp": "{{date.now}}"
+            },
+            "statusCode": 202,
+            "delay": 2000,
+            "dynamic": true
+          }
+        },
+        "parameters": []
+      },
+      {
+        "name": "Create Error Response Mock",
+        "description": "Create a mock that returns an error response for testing error handling.",
+        "url": "{{baseUrl}}{{apiPrefix}}/mocks",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "type": "json",
+          "json": {
+            "name": "Error Response Mock",
+            "method": "POST",
+            "path": "/api/error",
+            "response": {
+              "error": "Something went wrong",
+              "code": "INTERNAL_ERROR",
+              "timestamp": "{{date.now}}"
+            },
+            "statusCode": 500,
+            "dynamic": true
+          }
+        },
+        "parameters": []
+      }
+    ]
+  }
+}

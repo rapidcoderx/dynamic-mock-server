@@ -3,9 +3,11 @@
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Features](https://img.shields.io/badge/Features-Dynamic%20Values%20%26%20Delays-blue)
 ![UI](https://img.shields.io/badge/UI-Liquid%20Glass%20Theme-purple)
-![Integration](https://img.shields.io/badge/Export-JSON%20%7C%20Postman%20%7C%20HTTPie-orange)
-
-A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities. Configure and simulate API responses easily for local testing, demos, or prototyping – all with a beautiful frontend and modular backend.
+![Integration](https://img.shields.io/badge/Export-JSON%20%7C%20Postman%20%7C%20HTTPie-orange)- **[🎲 Dynamic Values & Response Delays Guide](docs/DYNAMIC_VALUES_AND_DELAYS.md)** - Complete guide to dynamic value generation and sleep/delay functionality
+- **[📋 Dynamic Values Cheat Sheet](docs/DYNAMIC_VALUES_CHEAT_SHEET.md)** - Quick reference for placeholders and delays
+- **[🔗 Header Routing Guide](docs/HEADER_ROUTING.md)** - Advanced routing with headers
+- **[🗄️ Database Storage Guide](docs/DATABASE_STORAGE.md)** - PostgreSQL and MongoDB setup instructions
+- **[📁 Examples](examples/)** - Ready-to-use mock configurations and import filessleek, modern mock server with a liquid-glass UI and dynamic API capabilities. Configure and simulate API responses easily for local testing, demos, or prototyping – all with a beautiful frontend and modular backend.
 
 ## 🏆 Key Achievements
 
@@ -73,12 +75,13 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   └── styles.css              # Source Tailwind CSS with custom components
 
 /mocks
-  └── mock-config.json        # Persistent mock storage
+  └── mock-config.json        # Persistent mock storage (file mode)
 
 /docs
   ├── HEADER_ROUTING.md       # Documentation for header-based routing
   ├── DYNAMIC_VALUES_AND_DELAYS.md  # Complete guide to dynamic values and delays
-  └── DYNAMIC_VALUES_CHEAT_SHEET.md # Quick reference for placeholders and delays
+  ├── DYNAMIC_VALUES_CHEAT_SHEET.md # Quick reference for placeholders and delays
+  └── DATABASE_STORAGE.md     # Database storage configuration (PostgreSQL & MongoDB)
 
 /examples
   ├── header-routing-examples.json  # Example configurations
@@ -105,11 +108,70 @@ npm run dev
 npm start
 ```
 
-### 2. Access App
+### 2. Storage Configuration (Optional)
+
+**File Storage (Default)**:
+```bash
+# No configuration needed
+npm start
+```
+
+**Database Setup (Interactive)**:
+```bash
+# Run interactive setup script
+npm run setup-db
+# Follow the prompts to configure PostgreSQL or MongoDB
+```
+
+**Manual Database Configuration**:
+
+**PostgreSQL Storage**:
+```bash
+# Set environment variables
+STORAGE_TYPE=postgres
+DATABASE_URL=postgresql://user:pass@localhost:5432/mock_server
+
+npm start
+```
+
+**MongoDB Storage**:
+```bash
+# Set environment variables  
+STORAGE_TYPE=mongodb
+MONGODB_URL=mongodb://localhost:27017/mock_server
+
+npm start
+```
+
+See **[📄 Database Storage Guide](docs/DATABASE_STORAGE.md)** for detailed setup instructions.
+
+### 3. Access App
 
 Open: [http://localhost:8080](http://localhost:8080)
 
-### 3. Quick Start with Dynamic Values
+### 4. API Collections (Optional)
+
+For programmatic access and testing, use the provided API collections:
+
+**Postman Collection**:
+- Import `api-collections/Dynamic-Mock-Server.postman_collection.json` into Postman
+- Pre-configured with environment variables and test scripts
+- Organized folders for all CRUD operations
+
+**HTTPie Commands**:
+- Use `api-collections/httpie-commands.sh` for command-line testing
+- Ready-to-run commands with examples
+- Advanced usage patterns and one-liners
+
+```bash
+# Example HTTPie usage
+http GET localhost:3000/api/v1/mocks  # List all mocks
+http POST localhost:3000/api/v1/mocks name="Test API" method="GET" path="/test" response:='{"message": "Hello"}'
+```
+
+See **[📡 API Collections](api-collections/)** for complete documentation.
+
+### 5. Quick Start with Dynamic Values
 
 1. **Create a Dynamic Mock**:
    - Click "➕ Add Mock" 
@@ -133,7 +195,7 @@ Open: [http://localhost:8080](http://localhost:8080)
    - Use the preview generator to test templates
    - Copy examples from the documentation
 
-### 4. Build & Development Commands
+### 6. Build & Development Commands
 
 ```bash
 # CSS Development (watch mode)
@@ -146,7 +208,7 @@ npm run build-css-prod
 npm test
 ```
 
-### 5. Environment Configuration
+### 7. Environment Configuration
 
 ```bash
 # Optional environment variables (create .env file)
@@ -325,8 +387,10 @@ Configure realistic network delays in Advanced Options:
 ## 📚 Documentation
 
 - **[🎲 Dynamic Values & Response Delays Guide](docs/DYNAMIC_VALUES_AND_DELAYS.md)** - Complete guide to dynamic value generation and sleep/delay functionality
-- **[� Dynamic Values Cheat Sheet](docs/DYNAMIC_VALUES_CHEAT_SHEET.md)** - Quick reference for placeholders and delays
-- **[�🔗 Header Routing Guide](docs/HEADER_ROUTING.md)** - Advanced routing with headers
+- **[📋 Dynamic Values Cheat Sheet](docs/DYNAMIC_VALUES_CHEAT_SHEET.md)** - Quick reference for placeholders and delays
+- **[🔗 Header Routing Guide](docs/HEADER_ROUTING.md)** - Advanced routing with headers
+- **[🗄️ Database Storage Guide](docs/DATABASE_STORAGE.md)** - PostgreSQL and MongoDB setup instructions
+- **[📡 API Collections](api-collections/)** - Postman collection and HTTPie commands for all API operations
 - **[📁 Examples](examples/)** - Ready-to-use mock configurations and import files
 
 ### Quick Links
@@ -354,9 +418,17 @@ Configure realistic network delays in Advanced Options:
 - [x] **Complete Mock Management**: Full CRUD operations with validation
 - [x] **Header-based Routing**: Advanced request matching with optional headers
 - [x] **Mock Analysis**: Conflict detection and duplicate identification
-- [x] **Persistent Storage**: File-based mock storage with automatic saving
+- [x] **Multi-Storage Support**: File, PostgreSQL, and MongoDB storage backends
 - [x] **Request Testing**: Built-in mock testing and matching validation
 - [x] **Modern UI**: Liquid glass design with responsive layouts
+
+### 🗄️ **Storage & Persistence**
+- [x] **File Storage**: JSON file-based storage (default)
+- [x] **PostgreSQL Storage**: Traditional SQL database with ACID compliance
+- [x] **MongoDB Storage**: NoSQL document database with flexible schema
+- [x] **Auto-Fallback**: Graceful fallback to file storage on database errors
+- [x] **Connection Pooling**: Efficient database connection management
+- [x] **Graceful Shutdown**: Proper cleanup of database connections
 
 ### 🎲 **Dynamic Values & Delays**
 - [x] **Dynamic Value Generation**: 60+ Faker.js placeholders ({{name}}, {{email}}, {{uuid}}, etc.)

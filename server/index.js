@@ -6,7 +6,7 @@ const { applySecurity } = require('./security');
 const logger = require('./logger');
 const { router: mockRoutes, mockStore } = require('./routes/mockRoutes');
 const { findMock } = require('../utils/matcher');
-const { loadMocks } = require('../utils/storageStrategy');
+const { loadMocks, closeStorage, getStorageInfo } = require('../utils/storageStrategy');
 const dynamicResponse = require('../utils/dynamicResponse');
 
 /**
@@ -23,27 +23,50 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const API_PREFIX = (process.env.API_PREFIX || '/api').replace(/\/$/, '');
 
-logger.info(`Starting server with API prefix: ${API_PREFIX}`);
-app.use(express.json());
-app.use(cors());
-applySecurity(app);
+// Initialize server
+async function startServer() {
+    logger.info(`Starting server with API prefix: ${API_PREFIX}`);
+    
+    app.use(express.json());
+    app.use(cors());
+    applySecurity(app);
 
-mockStore.push(...loadMocks());
+    // Load mocks from configured storage
+    try {
+        const mocks = await loadMocks();
+        mockStore.push(...mocks);
+        
+        const storageInfo = getStorageInfo();
+        logger.info(`📦 Loaded ${mocks.length} mocks using ${storageInfo.type} storage`);
+    } catch (err) {
+        logger.error('❌ Failed to load mocks:', err.message);
+        logger.warn('⚠️ Starting with empty mock store');
+    }
 
-// Serve static files under the prefix
-app.use(`${API_PREFIX}/`, express.static(path.join(__dirname, '..', 'public')));
+    // Serve static files under the prefix
+    app.use(`${API_PREFIX}/`, express.static(path.join(__dirname, '..', 'public')));
 
-// Health check endpoint
-app.get(`${API_PREFIX}/health`, (req, res) => {
-    logger.info('✅ Health check passed');
-    res.status(200).json({ status: 'ok' });
-});
+    // Health check endpoint
+    app.get(`${API_PREFIX}/health`, (req, res) => {
+        const storageInfo = getStorageInfo();
+        logger.info('✅ Health check passed');
+        res.status(200).json({ 
+            status: 'ok', 
+            storage: storageInfo,
+            mocks: mockStore.length,
+            timestamp: new Date().toISOString()
+        });
+    });
 
-app.use(`${API_PREFIX}/mocks`, mockRoutes);
+    app.use(`${API_PREFIX}/mocks`, mockRoutes);
 
-app.get(`${API_PREFIX}/config`, (req, res) => {
-    res.json({ apiPrefix: API_PREFIX });
-});
+    app.get(`${API_PREFIX}/config`, (req, res) => {
+        const storageInfo = getStorageInfo();
+        res.json({ 
+            apiPrefix: API_PREFIX,
+            storage: storageInfo
+        });
+    });
 
 // Mock matching middleware - use middleware instead of app.all('*')
 app.use(async (req, res, next) => {
@@ -138,6 +161,36 @@ app.use((req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-    logger.info(`🚀 Server running at http://localhost:${PORT}${API_PREFIX}/`);
+    const server = app.listen(PORT, () => {
+        logger.info(`🚀 Server running at http://localhost:${PORT}${API_PREFIX}/`);
+    });
+
+    // Graceful shutdown
+    const gracefulShutdown = async (signal) => {
+        logger.info(`📴 Received ${signal}. Starting graceful shutdown...`);
+        
+        server.close(async () => {
+            logger.info('🔒 HTTP server closed');
+            
+            try {
+                await closeStorage();
+                logger.info('💾 Storage connections closed');
+            } catch (err) {
+                logger.error('❌ Error closing storage:', err.message);
+            }
+            
+            logger.info('✅ Graceful shutdown completed');
+            process.exit(0);
+        });
+    };
+
+    // Handle shutdown signals
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+}
+
+// Start the server
+startServer().catch(err => {
+    logger.error('❌ Failed to start server:', err.message);
+    process.exit(1);
 });

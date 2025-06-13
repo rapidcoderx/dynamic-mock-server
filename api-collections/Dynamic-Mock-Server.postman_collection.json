@@ -1,0 +1,528 @@
+{
+  "info": {
+    "name": "Dynamic Mock Server API",
+    "description": "Complete API collection for the Dynamic Mock Server with examples for all CRUD operations including normal mocks, dynamic mocks, updates, deletions, and inquiries.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set base URL if not already set",
+          "if (!pm.environment.get('baseUrl')) {",
+          "    pm.environment.set('baseUrl', 'http://localhost:3000');",
+          "}",
+          "",
+          "// Set API prefix if not already set",
+          "if (!pm.environment.get('apiPrefix')) {",
+          "    pm.environment.set('apiPrefix', '/api/v1');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "apiPrefix",
+      "value": "/api/v1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Configuration",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "health"]
+            },
+            "description": "Check the health status of the mock server and its database connections."
+          },
+          "response": [
+            {
+              "name": "Healthy Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}{{apiPrefix}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["{{apiPrefix}}", "health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2024-01-15T10:30:00.000Z\",\n  \"storage\": {\n    \"type\": \"file\",\n    \"status\": \"connected\"\n  },\n  \"uptime\": 1234.567\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/config",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "config"]
+            },
+            "description": "Get current server configuration including storage type and available features."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mock Management",
+      "item": [
+        {
+          "name": "List All Mocks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks"]
+            },
+            "description": "Retrieve all registered mocks in the system."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}{{apiPrefix}}/mocks",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["{{apiPrefix}}", "mocks"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"name\": \"User Profile API\",\n    \"method\": \"GET\",\n    \"path\": \"/api/users/profile\",\n    \"headers\": {},\n    \"response\": {\n      \"id\": 1,\n      \"name\": \"John Doe\",\n      \"email\": \"john@example.com\"\n    },\n    \"statusCode\": 200,\n    \"delay\": null,\n    \"dynamic\": false\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create Static Mock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Store the created mock ID for use in other requests",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('createdMockId', response.id);",
+                  "    pm.test('Mock created successfully', function () {",
+                  "        pm.expect(response.id).to.be.a('string');",
+                  "        pm.expect(response.name).to.equal('User Profile API');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"User Profile API\",\n  \"method\": \"GET\",\n  \"path\": \"/api/users/profile\",\n  \"headers\": {\n    \"Authorization\": \"Bearer token\"\n  },\n  \"response\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"department\": \"Engineering\",\n    \"role\": \"Senior Developer\"\n  },\n  \"statusCode\": 200,\n  \"delay\": null,\n  \"dynamic\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks"]
+            },
+            "description": "Create a new static mock that returns a fixed response."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"User Profile API\",\n  \"method\": \"GET\",\n  \"path\": \"/api/users/profile\",\n  \"headers\": {\n    \"Authorization\": \"Bearer token\"\n  },\n  \"response\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  },\n  \"statusCode\": 200,\n  \"delay\": null,\n  \"dynamic\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}{{apiPrefix}}/mocks",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["{{apiPrefix}}", "mocks"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"name\": \"User Profile API\",\n  \"method\": \"GET\",\n  \"path\": \"/api/users/profile\",\n  \"headers\": {\n    \"Authorization\": \"Bearer token\"\n  },\n  \"response\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  },\n  \"statusCode\": 200,\n  \"delay\": null,\n  \"dynamic\": false\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Dynamic Mock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Store the created dynamic mock ID",
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('dynamicMockId', response.id);",
+                  "    pm.test('Dynamic mock created successfully', function () {",
+                  "        pm.expect(response.dynamic).to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dynamic Product List\",\n  \"method\": \"GET\",\n  \"path\": \"/api/products\",\n  \"response\": {\n    \"products\": [\n      {\n        \"id\": \"{{uuid}}\",\n        \"name\": \"{{commerce.productName}}\",\n        \"price\": \"{{commerce.price}}\",\n        \"description\": \"{{lorem.sentences}}\",\n        \"category\": \"{{commerce.department}}\",\n        \"inStock\": \"{{datatype.boolean}}\",\n        \"createdAt\": \"{{date.recent}}\"\n      }\n    ],\n    \"total\": \"{{datatype.number}}\",\n    \"page\": 1,\n    \"timestamp\": \"{{date.now}}\"\n  },\n  \"statusCode\": 200,\n  \"delay\": 500,\n  \"dynamic\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks"]
+            },
+            "description": "Create a dynamic mock that generates different responses using faker.js placeholders."
+          }
+        },
+        {
+          "name": "Update Mock",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated User Profile API\",\n  \"method\": \"GET\",\n  \"path\": \"/api/users/profile\",\n  \"headers\": {\n    \"Authorization\": \"Bearer token\"\n  },\n  \"response\": {\n    \"id\": 1,\n    \"name\": \"Jane Doe\",\n    \"email\": \"jane@example.com\",\n    \"department\": \"Engineering\",\n    \"role\": \"Tech Lead\",\n    \"lastLogin\": \"2024-01-15T10:30:00Z\"\n  },\n  \"statusCode\": 200,\n  \"delay\": 100,\n  \"dynamic\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/{{createdMockId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "{{createdMockId}}"]
+            },
+            "description": "Update an existing mock by ID. Uses the mock ID stored from the create operation."
+          }
+        },
+        {
+          "name": "Delete Mock",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/{{createdMockId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "{{createdMockId}}"]
+            },
+            "description": "Delete a mock by ID. Uses the mock ID stored from the create operation."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}{{apiPrefix}}/mocks/123e4567-e89b-12d3-a456-426614174000",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["{{apiPrefix}}", "mocks", "123e4567-e89b-12d3-a456-426614174000"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Mock deleted successfully\",\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mock Testing & Analysis",
+      "item": [
+        {
+          "name": "Test Mock Endpoint",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"method\": \"GET\",\n  \"path\": \"/api/users/profile\",\n  \"headers\": {\n    \"Authorization\": \"Bearer token\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "test"]
+            },
+            "description": "Test if a request would match any existing mocks without actually calling the mock."
+          }
+        },
+        {
+          "name": "Analyze Request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/analyze?method=GET&path=/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "analyze"],
+              "query": [
+                {
+                  "key": "method",
+                  "value": "GET"
+                },
+                {
+                  "key": "path",
+                  "value": "/api/users/profile"
+                }
+              ]
+            },
+            "description": "Analyze what mocks would match a given request pattern."
+          }
+        },
+        {
+          "name": "Preview Dynamic Response",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"response\": {\n    \"user\": {\n      \"id\": \"{{uuid}}\",\n      \"name\": \"{{person.fullName}}\",\n      \"email\": \"{{internet.email}}\",\n      \"avatar\": \"{{internet.avatar}}\",\n      \"joinDate\": \"{{date.past}}\"\n    },\n    \"stats\": {\n      \"loginCount\": \"{{datatype.number}}\",\n      \"lastActive\": \"{{date.recent}}\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/preview",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "preview"]
+            },
+            "description": "Preview how a dynamic response template would be rendered."
+          }
+        },
+        {
+          "name": "Get Available Placeholders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/placeholders",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "placeholders"]
+            },
+            "description": "Get a list of all available dynamic placeholders for creating dynamic mocks."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Import & Export",
+      "item": [
+        {
+          "name": "Export All Mocks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/export",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "export"]
+            },
+            "description": "Export all mocks as a JSON file for backup or migration."
+          }
+        },
+        {
+          "name": "Import Mocks",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mocks\": [\n    {\n      \"name\": \"Imported Mock 1\",\n      \"method\": \"GET\",\n      \"path\": \"/api/imported/endpoint1\",\n      \"response\": {\n        \"message\": \"This is an imported mock\",\n        \"data\": \"Sample data\"\n      },\n      \"statusCode\": 200,\n      \"dynamic\": false\n    },\n    {\n      \"name\": \"Imported Mock 2\",\n      \"method\": \"POST\",\n      \"path\": \"/api/imported/endpoint2\",\n      \"response\": {\n        \"id\": \"{{uuid}}\",\n        \"timestamp\": \"{{date.now}}\",\n        \"success\": true\n      },\n      \"statusCode\": 201,\n      \"dynamic\": true\n    }\n  ],\n  \"overwrite\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/import",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "import"]
+            },
+            "description": "Import mocks from a JSON file or payload."
+          }
+        },
+        {
+          "name": "Export Postman Collection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/export/postman",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "export", "postman"]
+            },
+            "description": "Export all mocks as a Postman collection."
+          }
+        },
+        {
+          "name": "Export HTTPie Collection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/mocks/export/httpie",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{apiPrefix}}", "mocks", "export", "httpie"]
+            },
+            "description": "Export all mocks as HTTPie commands."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mock Invocation Examples",
+      "description": "Examples of calling the actual mock endpoints that have been created",
+      "item": [
+        {
+          "name": "Call User Profile Mock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer token"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "Call the actual mock endpoint created for user profile. Note: This calls the mock directly, not the management API."
+          }
+        },
+        {
+          "name": "Call Dynamic Product List Mock",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Call the dynamic product list mock. Each call will return different data."
+          }
+        },
+        {
+          "name": "Call Mock with POST Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Product\",\n  \"price\": 99.99,\n  \"category\": \"Electronics\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Example of calling a mock with POST data. Create this mock first using the management API."
+          }
+        }
+      ]
+    }
+  ]
+}

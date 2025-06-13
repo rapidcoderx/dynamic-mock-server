@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
+    "setup-db": "./setup-database.sh",
     "ncu": "ncu -u",
     "build-css": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
     "build-css-prod": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify"
@@ -21,6 +22,8 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
+    "mongoose": "^8.15.2",
+    "pg": "^8.16.0",
     "uuid": "^11.1.0",
     "winston": "^3.17.0"
   },

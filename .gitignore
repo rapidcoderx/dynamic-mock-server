@@ -31,8 +31,13 @@ bower_components/
 
 # Environment variables
 .env
+.env.local
+.env.development
 .env.test
-.env.*
+.env.production
+
+# Allow .env.example to be committed
+!.env.example
 
 # Next.js build output
 .next/
