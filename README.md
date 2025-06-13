@@ -6,17 +6,23 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 
 ## ✨ Features
 
-- 🧱 Create and register mocks with:
-  - Unique name
-  - Path, HTTP method
-  - Optional headers (as JSON)
-  - Custom response body (as JSON)
-- 📦 File-based mock storage (`mockStore.json`)
-- 👁️ Modal-based mock viewer with full details
-- 🎨 Liquid glass theme UI using Tailwind CSS
-- 🔌 Dynamic `apiPrefix` support (config-driven)
-- 🛠️ Dev logs and validations for request matching
-- 🧩 Modular architecture (`routes/`, `utils/`, `storageStrategy/`)
+- 🧱 **Complete Mock Management**:
+  - Create mocks with unique names, paths, HTTP methods
+  - Optional headers (as JSON) for advanced routing
+  - Custom response body (as JSON) with status codes
+  - Edit existing mocks with full validation
+  - Delete mocks with confirmation dialogs
+- 📦 **Persistent Storage**: File-based mock storage (`mockStore.json`)
+- 👁️ **Rich UI Experience**: 
+  - Modal-based mock viewer with full details
+  - Smart notification system with contextual feedback
+  - Responsive liquid glass theme using Tailwind CSS v4
+- 🔌 **Dynamic Configuration**: Config-driven `apiPrefix` support
+- 🛠️ **Developer Experience**: 
+  - Comprehensive logging and request matching validation
+  - Real-time mock conflict detection and analysis
+  - Keyboard shortcuts and intuitive navigation
+- 🧩 **Modular Architecture**: Clean separation with `routes/`, `utils/`, and storage strategies
 
 ---
 
@@ -24,16 +30,35 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 
 ```
 /server
-  ├── index.js                # Entry point
-  ├── routes/
-  │   └── mocks.js            # Register, list, match mocks
-  ├── utils/
-  │   ├── matcher.js          # Mock matching logic
-  │   └── storageStrategy.js  # File-based storage logic
+  ├── index.js                # Entry point with Express server
+  ├── logger.js               # Centralized logging system
+  ├── security.js             # Security middleware
+  ├── tracer.js               # Request tracing utilities
+  └── routes/
+      └── mockRoutes.js       # Complete mock CRUD operations
+
+/utils
+  ├── matcher.js              # Advanced mock matching logic
+  ├── storage.js              # Mock persistence utilities
+  └── storageStrategy.js      # File-based storage implementation
 
 /public
-  ├── index.html              # Liquid Glass frontend
-  └── favicon.svg             # App icon
+  ├── index.html              # Modern liquid glass frontend
+  ├── styles.css              # Compiled Tailwind CSS
+  ├── favicon.svg             # App favicon
+  └── icon.svg                # App icon
+
+/src
+  └── styles.css              # Source Tailwind CSS with custom components
+
+/mocks
+  └── mock-config.json        # Persistent mock storage
+
+/docs
+  └── HEADER_ROUTING.md       # Documentation for header-based routing
+
+/examples
+  └── header-routing-examples.json  # Example configurations
 ```
 
 ---
@@ -43,80 +68,180 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 ### 1. Install & Run
 
 ```bash
+# Install dependencies
 npm install
+
+# Build CSS (production)
+npm run build-css-prod
+
+# Start development server
 npm run dev
+
+# Or start production server
+npm start
 ```
 
 ### 2. Access App
 
 Open: [http://localhost:8080](http://localhost:8080)
 
+### 3. Build & Development Commands
+
+```bash
+# CSS Development (watch mode)
+npm run build-css
+
+# CSS Production (minified)
+npm run build-css-prod
+
+# Run tests
+npm test
+```
+
+### 4. Environment Configuration
+
+```bash
+# Optional environment variables (create .env file)
+PORT=8080                    # Server port (default: 8080)
+API_PREFIX=/api              # API prefix for mock endpoints (default: /api)
+LOG_DEV_REQUESTS=false       # Show filtered dev tool requests in logs (default: false)
+```
+
+The server automatically filters out noisy development tool requests (Chrome DevTools, favicon requests, etc.) to keep logs clean. Set `LOG_DEV_REQUESTS=true` if you need to debug these requests.
+
 ---
 
 ## 🧪 Testing Mocks
 
 ### ✅ Via UI
-- Add a mock via form.
-- View all mocks in modal.
-- Inspect details using "View" button.
+- **Create**: Add new mocks via the intuitive form interface
+- **View**: Browse all mocks in a beautiful modal with search and filtering
+- **Edit**: Modify existing mocks with inline editing capabilities
+- **Delete**: Remove mocks with confirmation dialogs for safety
+- **Test**: Built-in mock testing functionality to verify request matching
 
-### 📬 Via Postman (Coming up!)
-- Collection will include:
-  - GET, POST, PUT, DELETE samples
-  - Header-matched mocks
+### 📬 Via API Endpoints
 
-### 🔧 Via HTTPie (Coming up!)
-Example:
-
+#### Mock Management
 ```bash
-http POST http://localhost:8080/api/user x-mock-type:success
+# List all mocks
+GET http://localhost:8080/api/mocks
+
+# Create a new mock
+POST http://localhost:8080/api/mocks
+Content-Type: application/json
+{
+  "name": "getUserSuccess",
+  "method": "GET",
+  "path": "/api/user",
+  "headers": {"x-mock-type": "success"},
+  "response": {"id": 1, "name": "John Doe"},
+  "statusCode": 200
+}
+
+# Update a mock
+PUT http://localhost:8080/api/mocks/{id}
+
+# Delete a mock
+DELETE http://localhost:8080/api/mocks/{id}
+
+# Test mock matching
+POST http://localhost:8080/api/mocks/test
+Content-Type: application/json
+{
+  "method": "GET",
+  "path": "/api/user",
+  "headers": {"x-mock-type": "success"}
+}
+
+# Analyze mock conflicts
+GET http://localhost:8080/api/mocks/analyze
+```
+
+#### Using Your Mocked APIs
+```bash
+# Example: Call your mocked endpoint
+GET http://localhost:8080/api/user
+x-mock-type: success
 ```
 
 ---
 
-## ✅ Progress So Far
+## ✅ Recent Updates & Improvements
 
-- [x] Node.js server with Express
-- [x] Mock creation, listing, and matching
-- [x] Liquid glass UI (Tailwind CSS)
-- [x] Modal-based mock inspection
-- [x] File-based mock storage
-- [x] Dynamic config fetch (`/api/config`)
-- [x] API structure and logs for debug
+### 🎨 **UI/UX Enhancements**
+- [x] **Tailwind CSS v4 Compatibility**: Updated all opacity utilities to new v4 syntax
+- [x] **CSS Conflict Resolution**: Fixed conflicting `hidden` and `flex` classes
+- [x] **Smart Notifications**: Contextual notifications with auto-dismiss and click-to-close
+- [x] **Improved Modal System**: Enhanced modal centering and responsive design
 
----
+### 🔧 **Technical Improvements**
+- [x] **Notification System Optimization**: Eliminated redundant "Loaded X mocks" notifications after delete/edit operations
+- [x] **Global State Management**: Improved mock list refresh handling for better UX
+- [x] **Enhanced Error Handling**: Better error messages and validation feedback
+- [x] **Intelligent Log Filtering**: Suppresses noise from dev tools and browser requests (Chrome DevTools, favicon, etc.)
+- [x] **Code Architecture**: Modular JavaScript functions for better maintainability
 
-## 🧩 Pending (To Be Done)
-
-- [ ] ✅ Auto-generate Postman collection from saved mocks
-- [ ] ✅ Generate corresponding `httpie` test commands
-- [ ] ✨ Add support for wildcard paths (e.g., `/api/user/*`)
-- [ ] ✨ Allow query param-based mock resolution
-- [ ] 🔐 Add dev/prod toggle for CORS & security middleware
-
----
-
-## 🔮 Future Phases
-
-### 📚 Phase 2: Persistence & Security
-- DB support (SQLite, then Postgres)
-- JWT-based admin panel
-- Encrypted mock storage
-
-### 🧠 Phase 3: Smart Mocks
-- AI-based response suggestions
-- Delay simulation, dynamic values (timestamp, UUIDs, etc.)
-- Request history and logging panel
+### 🛠️ **Core Features Completed**
+- [x] **Complete CRUD Operations**: Create, Read, Update, Delete mocks with full validation
+- [x] **Header-based Routing**: Advanced mock matching with optional headers
+- [x] **Mock Analysis**: Conflict detection and duplicate identification
+- [x] **Persistent Storage**: File-based mock storage with automatic saving
+- [x] **Request Testing**: Built-in mock testing and matching validation
+- [x] **Modern UI**: Liquid glass design with responsive layouts
 
 ---
 
-## 💡 Ideas for MVP+ Showcase
+## 🔮 Roadmap & Future Enhancements
 
-- 🔗 Export/import mocks
-- 📊 Analytics of hit/mock usage
-- 🧰 CLI tool to manage mocks (add/remove/reset)
-- 📜 Swagger/OpenAPI to mock converter
+### 📈 **Next Priority Features**
+- [ ] 🔗 **Export/Import**: Mock collections export/import functionality
+- [ ] 📋 **Postman Integration**: Auto-generate Postman collections from saved mocks
+- [ ] 🔧 **HTTPie Commands**: Generate corresponding HTTPie test commands
+- [ ] 📊 **Analytics Dashboard**: Mock usage statistics and hit tracking
+
+### 🚀 **Advanced Features**
+- [ ] ✨ **Wildcard Paths**: Support for dynamic path matching (e.g., `/api/user/*`)
+- [ ] 🔍 **Query Parameters**: Query param-based mock resolution
+- [ ] ⏱️ **Response Delays**: Configurable response delay simulation
+- [ ] 🎲 **Dynamic Values**: Timestamp, UUIDs, and random data generation
+- [ ] � **Request Logging**: Comprehensive request history and logging panel
+
+### �️ **Security & Production**
+- [ ] 🔐 **Environment Toggles**: Dev/prod configuration for CORS & security
+- [ ] 🗄️ **Database Support**: SQLite and PostgreSQL integration
+- [ ] 🔑 **Authentication**: JWT-based admin panel and mock protection
+- [ ] 🔒 **Encrypted Storage**: Secure mock storage options
+
+### 🧠 **AI & Intelligence**
+- [ ] 🤖 **AI Response Suggestions**: Machine learning-based response generation
+- [ ] � **OpenAPI Integration**: Swagger/OpenAPI to mock converter
+- [ ] 🧰 **CLI Tool**: Command-line interface for mock management
+- [ ] � **Mobile App**: Mobile interface for mock management
+
+## 🚀 Technology Stack
+
+- **Backend**: Node.js + Express.js
+- **Frontend**: Vanilla JavaScript + Tailwind CSS v4
+- **Storage**: File-based JSON storage (future: SQLite/PostgreSQL)
+- **Architecture**: RESTful API with modular route handlers
+- **UI Framework**: Custom liquid glass design system
+- **Build Tools**: Tailwind CSS CLI for optimized styling
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-Built with ❤️ by [Your Name] – feel free to fork, star, and extend!
+**Built with ❤️ for developers who need powerful, beautiful mock servers**
+
+⭐ Star this repo if you find it useful!

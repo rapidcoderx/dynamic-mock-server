@@ -8,6 +8,16 @@ const { router: mockRoutes, mockStore } = require('./routes/mockRoutes');
 const { findMock } = require('../utils/matcher');
 const { loadMocks } = require('../utils/storageStrategy');
 
+/**
+ * Dynamic Mock Server
+ * 
+ * Features:
+ * - Intelligent log filtering: Suppresses noise from dev tools and browser requests
+ * - Set LOG_DEV_REQUESTS=true to see filtered requests in debug mode
+ * - Mock management with CRUD operations
+ * - Header-based routing support
+ */
+
 const app = express();
 const PORT = process.env.PORT || 8080;
 const API_PREFIX = (process.env.API_PREFIX || '/api').replace(/\/$/, '');
@@ -66,7 +76,31 @@ app.use((req, res, next) => {
         
         return res.status(mock.statusCode || 200).json(mock.response);
     } else {
-        logger.warn(`❌ No mock found for ${req.method} ${req.path}`);
+        // Filter out common development tool and browser requests to reduce log noise
+        const commonDevPaths = [
+            '/.well-known/',           // Chrome DevTools, browser discovery
+            '/favicon.ico',            // Browser favicon requests
+            '/apple-touch-icon',       // iOS icon requests
+            '/_next/',                 // Next.js dev server
+            '/__webpack',              // Webpack dev server
+            '/sockjs-node/',           // Hot reload websockets
+            '/hot-update',             // Hot module replacement
+            '/.vscode/',               // VS Code extensions
+            '/manifest.json',          // PWA manifest
+            '/sw.js',                  // Service worker
+            '/robots.txt'              // SEO robots file
+        ];
+        
+        const isDevToolRequest = commonDevPaths.some(path => req.path.includes(path));
+        
+        // Log warning only for actual API calls that developers care about
+        if (!isDevToolRequest) {
+            logger.warn(`❌ No mock found for ${req.method} ${req.path}`);
+        } else if (process.env.LOG_DEV_REQUESTS === 'true') {
+            // Optional debug logging for development tool requests
+            logger.debug(`🔍 Dev tool request: ${req.method} ${req.path}`);
+        }
+        
         return res.status(result.statusCode).json(result.response);
     }
 });
