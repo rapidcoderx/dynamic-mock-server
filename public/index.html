@@ -250,6 +250,50 @@
                 class="glass p-2 rounded w-full" />
             <textarea name="response" placeholder="Mock response body (JSON)"
                 class="glass p-2 rounded w-full h-32"></textarea>
+                
+            <!-- Advanced Options -->
+            <details class="glass rounded p-3">
+                <summary class="cursor-pointer text-sm font-medium mb-3">⚙️ Advanced Options</summary>
+                <div class="space-y-3 mt-3">
+                    <!-- Delay Configuration -->
+                    <div>
+                        <label class="block text-xs text-gray-300 mb-1">Response Delay</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <select name="delayType" class="glass p-2 rounded text-xs">
+                                <option value="">No Delay</option>
+                                <option value="fixed">Fixed</option>
+                                <option value="random">Random</option>
+                                <option value="network">Network Sim</option>
+                            </select>
+                            <input type="number" name="delayMin" placeholder="Min (ms)" min="0" max="10000" 
+                                class="glass p-2 rounded text-xs" />
+                            <input type="number" name="delayMax" placeholder="Max (ms)" min="0" max="10000" 
+                                class="glass p-2 rounded text-xs" />
+                        </div>
+                    </div>
+                    
+                    <!-- Dynamic Values -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs text-gray-300">Dynamic Values</label>
+                            <button type="button" id="showPlaceholders" class="text-xs text-blue-300 hover:text-blue-200">
+                                📋 Show Placeholders
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" name="dynamic" id="dynamicCheck" class="rounded">
+                            <label for="dynamicCheck" class="text-xs">Enable dynamic value generation</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Code -->
+                    <div>
+                        <label class="block text-xs text-gray-300 mb-1">Status Code</label>
+                        <input type="number" name="statusCode" value="200" min="100" max="599" 
+                            class="glass p-2 rounded text-xs w-20" />
+                    </div>
+                </div>
+            </details>
         </form>
 
         <!-- Buttons -->
@@ -321,7 +365,50 @@
                 </select>
                 <input type="text" id="editHeaders" placeholder='Headers JSON (e.g., {"x-env":"dev"})' class="glass p-2 rounded w-full" />
                 <textarea id="editResponse" placeholder="Response JSON" class="glass p-2 rounded w-full h-32"></textarea>
-                <input type="number" id="editStatusCode" placeholder="Status Code (default: 200)" class="glass p-2 rounded w-full" />
+                
+                <!-- Advanced Options for Edit -->
+                <details class="glass rounded p-3">
+                    <summary class="cursor-pointer text-sm font-medium mb-3">⚙️ Advanced Options</summary>
+                    <div class="space-y-3 mt-3">
+                        <!-- Delay Configuration -->
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1">Response Delay</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <select id="editDelayType" class="glass p-2 rounded text-xs">
+                                    <option value="">No Delay</option>
+                                    <option value="fixed">Fixed</option>
+                                    <option value="random">Random</option>
+                                    <option value="network">Network Sim</option>
+                                </select>
+                                <input type="number" id="editDelayMin" placeholder="Min (ms)" min="0" max="10000" 
+                                    class="glass p-2 rounded text-xs" />
+                                <input type="number" id="editDelayMax" placeholder="Max (ms)" min="0" max="10000" 
+                                    class="glass p-2 rounded text-xs" />
+                            </div>
+                        </div>
+                        
+                        <!-- Dynamic Values -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="text-xs text-gray-300">Dynamic Values</label>
+                                <button type="button" id="showPlaceholdersEdit" class="text-xs text-blue-300 hover:text-blue-200">
+                                    📋 Show Placeholders
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" id="editDynamic" class="rounded">
+                                <label for="editDynamic" class="text-xs">Enable dynamic value generation</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Code -->
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1">Status Code</label>
+                            <input type="number" id="editStatusCode" value="200" min="100" max="599" 
+                                class="glass p-2 rounded text-xs w-20" />
+                        </div>
+                    </div>
+                </details>
                 <div class="flex gap-4">
                     <button type="submit" class="liquid-button flex-1">⚡ Save Changes</button>
                     <button type="button" id="cancelEdit" class="liquid-button flex-1 bg-red-600">✕ Cancel</button>
@@ -485,6 +572,36 @@
                         <div>• Export/import for team sharing</div>
                         <div>• Postman collections for testing</div>
                         <div>• HTTPie for command-line testing</div>
+                        <div>• Enable dynamic values for realistic data</div>
+                        <div>• Use delays to simulate network conditions</div>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Values -->
+                <div>
+                    <h3 class="text-sm font-semibold mb-2 text-purple-300 flex items-center gap-1">
+                        <span>🎲</span> Dynamic Values
+                    </h3>
+                    <div class="glass p-3 rounded text-xs space-y-1">
+                        <div><code class="text-green-300">{{name}}</code> - Random person name</div>
+                        <div><code class="text-green-300">{{email}}</code> - Random email address</div>
+                        <div><code class="text-green-300">{{timestamp}}</code> - Current timestamp</div>
+                        <div><code class="text-green-300">{{uuid}}</code> - Unique identifier</div>
+                        <div><code class="text-green-300">{{number:1:100}}</code> - Random number</div>
+                        <div class="text-blue-300 text-center">📋 Click "Show Placeholders" for all options</div>
+                    </div>
+                </div>
+                
+                <!-- Response Delays -->
+                <div>
+                    <h3 class="text-sm font-semibold mb-2 text-orange-300 flex items-center gap-1">
+                        <span>⏱️</span> Response Delays
+                    </h3>
+                    <div class="glass p-3 rounded text-xs space-y-1">
+                        <div><strong>Fixed:</strong> Consistent delay time</div>
+                        <div><strong>Random:</strong> Variable delay within range</div>
+                        <div><strong>Network:</strong> Realistic network simulation</div>
+                        <div class="text-gray-300">Configure in Advanced Options ⚙️</div>
                     </div>
                 </div>
                 
@@ -493,6 +610,53 @@
             <!-- Footer -->
             <div class="flex justify-center mt-4 pt-3 border-t border-white/20">
                 <button id="closeHelpBtn" class="liquid-button px-4 py-1 text-sm">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Placeholders Modal -->
+    <div id="placeholdersModal" class="modal-overlay hidden fixed inset-0 z-50 bg-black/50">
+        <div class="glass rounded-xl p-6 w-full max-w-4xl max-h-[90vh] text-white relative overflow-hidden flex flex-col">
+            <button id="closePlaceholdersModal" class="absolute top-3 right-4 text-xl hover:text-red-300">&times;</button>
+            
+            <!-- Header -->
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">📋</span>
+                <h2 class="text-xl font-bold">Dynamic Value Placeholders</h2>
+            </div>
+            
+            <!-- Scrollable Content -->
+            <div class="overflow-y-auto flex-1 space-y-4 pr-2 help-scroll">
+                <div class="grid md:grid-cols-2 gap-6" id="placeholdersContent">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                
+                <!-- Preview Section -->
+                <div class="border-t border-white/20 pt-4 mt-6">
+                    <h3 class="text-sm font-semibold mb-3 text-green-300 flex items-center gap-1">
+                        <span>👁️</span> Preview Generator
+                    </h3>
+                    <div class="glass p-4 rounded space-y-3">
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1">Test Response (use placeholders):</label>
+                            <textarea id="previewInput" placeholder='{"message": "Hello {{name}}", "timestamp": "{{timestamp}}", "id": "{{uuid}}"}'
+                                class="glass p-3 rounded w-full h-20 text-xs font-mono"></textarea>
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="generatePreview" class="action-button text-xs">🔄 Generate Preview</button>
+                            <button id="insertExample" class="action-button text-xs">📄 Load Example</button>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-300 mb-1">Generated Output:</label>
+                            <pre id="previewOutput" class="glass p-3 rounded w-full h-20 text-xs font-mono text-green-200 overflow-auto">Click "Generate Preview" to see output...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="flex justify-center mt-4 pt-3 border-t border-white/20">
+                <button id="closePlaceholdersBtn" class="liquid-button px-4 py-1 text-sm">Close</button>
             </div>
         </div>
     </div>
@@ -515,6 +679,7 @@
                 setupEditForm();
                 setupExportImport();
                 setupHelp();
+                setupPlaceholders();
             }
 
             function setupForm() {
@@ -527,6 +692,13 @@
                     const method = form.method.value;
                     const headersRaw = form.headers.value;
                     const responseRaw = form.response.value;
+                    
+                    // Advanced options
+                    const statusCode = parseInt(form.statusCode.value) || 200;
+                    const dynamic = form.dynamic.checked;
+                    const delayType = form.delayType.value;
+                    const delayMin = parseInt(form.delayMin.value) || 0;
+                    const delayMax = parseInt(form.delayMax.value) || 0;
 
                     let headers, response;
                     try {
@@ -537,7 +709,19 @@
                         return;
                     }
 
-                    const payload = { name, path, method, headers, response };
+                    // Configure delay
+                    let delay = null;
+                    if (delayType) {
+                        if (delayType === 'fixed') {
+                            delay = delayMin;
+                        } else if (delayType === 'random') {
+                            delay = { type: 'random', min: delayMin, max: delayMax || delayMin + 500 };
+                        } else if (delayType === 'network') {
+                            delay = { type: 'network' };
+                        }
+                    }
+
+                    const payload = { name, path, method, headers, response, statusCode, delay, dynamic };
 
                     const res = await fetch(`${API_PREFIX}/mocks`, {
                         method: 'POST',
@@ -573,6 +757,36 @@
                     showNotification(`Error loading mocks: ${err.message}`, 'error');
                 }
             };
+
+            // Global function to load placeholders
+            async function loadPlaceholders() {
+                const placeholdersContent = document.getElementById('placeholdersContent');
+                try {
+                    const res = await fetch(`${API_PREFIX}/mocks/placeholders`);
+                    const data = await res.json();
+                    
+                    let content = '';
+                    for (const [category, placeholders] of Object.entries(data.placeholders)) {
+                        content += `
+                            <div>
+                                <h4 class="text-sm font-semibold mb-2 text-blue-300">${category}</h4>
+                                <div class="glass p-3 rounded space-y-1">
+                                    ${placeholders.map(p => `
+                                        <div class="flex items-center justify-between text-xs">
+                                            <code class="text-green-300">${p}</code>
+                                            <button onclick="copyToClipboard('${p}')" class="text-gray-400 hover:text-white px-1">📋</button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    placeholdersContent.innerHTML = content;
+                } catch (err) {
+                    placeholdersContent.innerHTML = '<div class="text-red-300">Failed to load placeholders</div>';
+                }
+            }
 
             function setupModal() {
                 const viewBtn = document.getElementById('viewMocksBtn');
@@ -683,6 +897,25 @@
                 document.getElementById('editResponse').value = JSON.stringify(mock.response, null, 2);
                 document.getElementById('editStatusCode').value = mock.statusCode || 200;
                 
+                // Populate delay and dynamic fields
+                document.getElementById('editDynamic').checked = mock.dynamic || false;
+                
+                if (mock.delay) {
+                    if (typeof mock.delay === 'number') {
+                        document.getElementById('editDelayType').value = 'fixed';
+                        document.getElementById('editDelayMin').value = mock.delay;
+                        document.getElementById('editDelayMax').value = '';
+                    } else if (typeof mock.delay === 'object') {
+                        document.getElementById('editDelayType').value = mock.delay.type || 'fixed';
+                        document.getElementById('editDelayMin').value = mock.delay.min || 0;
+                        document.getElementById('editDelayMax').value = mock.delay.max || 0;
+                    }
+                } else {
+                    document.getElementById('editDelayType').value = '';
+                    document.getElementById('editDelayMin').value = '';
+                    document.getElementById('editDelayMax').value = '';
+                }
+                
                 modal.classList.remove('hidden');
                 
                 const closeModal = () => modal.classList.add('hidden');
@@ -725,6 +958,14 @@
 
             function setupEditForm() {
                 const form = document.getElementById('editMockForm');
+                
+                // Setup placeholders button for edit form
+                document.getElementById('showPlaceholdersEdit').onclick = () => {
+                    document.getElementById('placeholdersModal').classList.remove('hidden');
+                    // Reuse the existing loadPlaceholders functionality
+                    loadPlaceholders();
+                };
+                
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     
@@ -735,6 +976,12 @@
                     const headersRaw = document.getElementById('editHeaders').value;
                     const responseRaw = document.getElementById('editResponse').value;
                     const statusCode = parseInt(document.getElementById('editStatusCode').value) || 200;
+                    
+                    // Advanced options for edit
+                    const dynamic = document.getElementById('editDynamic').checked;
+                    const delayType = document.getElementById('editDelayType').value;
+                    const delayMin = parseInt(document.getElementById('editDelayMin').value) || 0;
+                    const delayMax = parseInt(document.getElementById('editDelayMax').value) || 0;
 
                     let headers, response;
                     try {
@@ -745,7 +992,19 @@
                         return;
                     }
 
-                    const payload = { name, path, method, headers, response, statusCode };
+                    // Configure delay for edit
+                    let delay = null;
+                    if (delayType) {
+                        if (delayType === 'fixed') {
+                            delay = delayMin;
+                        } else if (delayType === 'random') {
+                            delay = { type: 'random', min: delayMin, max: delayMax || delayMin + 500 };
+                        } else if (delayType === 'network') {
+                            delay = { type: 'network' };
+                        }
+                    }
+
+                    const payload = { name, path, method, headers, response, statusCode, delay, dynamic };
 
                     try {
                         const res = await fetch(`${API_PREFIX}/mocks/${mockId}`, {
@@ -998,6 +1257,132 @@
                 });
             }
 
+            // Dynamic Placeholders functionality
+            function setupPlaceholders() {
+                const showPlaceholdersBtn = document.getElementById('showPlaceholders');
+                const placeholdersModal = document.getElementById('placeholdersModal');
+                const closePlaceholdersModal = document.getElementById('closePlaceholdersModal');
+                const closePlaceholdersBtn = document.getElementById('closePlaceholdersBtn');
+                const placeholdersContent = document.getElementById('placeholdersContent');
+                const previewInput = document.getElementById('previewInput');
+                const previewOutput = document.getElementById('previewOutput');
+                const generatePreviewBtn = document.getElementById('generatePreview');
+                const insertExampleBtn = document.getElementById('insertExample');
+
+                const closePlaceholders = () => {
+                    placeholdersModal.classList.add('hidden');
+                };
+
+                // Event listeners
+                showPlaceholdersBtn.onclick = () => {
+                    placeholdersModal.classList.remove('hidden');
+                    loadPlaceholders();
+                };
+
+                closePlaceholdersModal.onclick = closePlaceholders;
+                closePlaceholdersBtn.onclick = closePlaceholders;
+
+                // Close when clicking outside
+                placeholdersModal.addEventListener('click', (e) => {
+                    if (e.target === placeholdersModal) {
+                        closePlaceholders();
+                    }
+                });
+
+                // Preview functionality
+                generatePreviewBtn.onclick = async () => {
+                    try {
+                        const input = previewInput.value.trim();
+                        if (!input) {
+                            previewOutput.textContent = 'Please enter some content to preview';
+                            return;
+                        }
+
+                        const res = await fetch(`${API_PREFIX}/mocks/preview`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ response: JSON.parse(input) })
+                        });
+
+                        if (res.ok) {
+                            const data = await res.json();
+                            previewOutput.textContent = JSON.stringify(data.processed, null, 2);
+                        } else {
+                            previewOutput.textContent = 'Preview failed - check your JSON syntax';
+                        }
+                    } catch (err) {
+                        previewOutput.textContent = `Error: ${err.message}`;
+                    }
+                };
+
+                // Insert example
+                insertExampleBtn.onclick = () => {
+                    const example = {
+                        "user": {
+                            "id": "{{uuid}}",
+                            "name": "{{name}}",
+                            "email": "{{email}}",
+                            "created": "{{timestamp}}"
+                        },
+                        "data": {
+                            "number": "{{number:1:100}}",
+                            "words": "{{words:3}}",
+                            "status": "{{oneOf:active,pending,inactive}}"
+                        }
+                    };
+                    previewInput.value = JSON.stringify(example, null, 2);
+                };
+            }
+
+            // Load dynamic placeholder options
+            function loadPlaceholderOptions() {
+                const container = document.getElementById('placeholdersContent');
+                container.innerHTML = ''; // Clear existing content
+
+                // Example placeholder data (this should come from your API or config)
+                const placeholders = [
+                    { name: 'name', description: 'User name', example: 'JohnDoe' },
+                    { name: 'timestamp', description: 'Current timestamp', example: '1633072800' },
+                    { name: 'uuid', description: 'Unique identifier', example: '550e8400-e29b-41d4-a716-446655440000' }
+                ];
+
+                placeholders.forEach(ph => {
+                    const div = document.createElement('div');
+                    div.className = 'glass p-4 rounded-md';
+                    div.innerHTML = `
+                        <p class="font-semibold">${ph.name}</p>
+                        <p class="text-xs text-gray-300">${ph.description}</p>
+                        <p class="text-xs text-green-200 font-mono">${ph.example}</p>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            // Generate preview output from template
+            function generatePreview(template) {
+                // Simple placeholder replacement logic
+                return template
+                    .replace(/{{name}}/g, 'JohnDoe')
+                    .replace(/{{timestamp}}/g, Date.now())
+                    .replace(/{{uuid}}/g, '550e8400-e29b-41d4-a716-446655440000');
+            }
+
+            // Copy to clipboard helper
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification(`📋 Copied: ${text}`, 'success', 2000);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    showNotification(`📋 Copied: ${text}`, 'success', 2000);
+                });
+            }
+
             // Smart Notification System
             function showNotification(message, type = 'info', duration = 4000) {
                 const container = document.getElementById('notificationContainer');
@@ -1054,6 +1439,7 @@
                     document.getElementById('deleteConfirmModal').classList.add('hidden');
                     document.getElementById('importModal').classList.add('hidden');
                     document.getElementById('helpModal').classList.add('hidden');
+                    document.getElementById('placeholdersModal').classList.add('hidden');
                 }
                 
                 // Ctrl+N to add new mock

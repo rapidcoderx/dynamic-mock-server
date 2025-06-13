@@ -1,0 +1,139 @@
+{
+  "info": {
+    "title": "Dynamic Values Examples",
+    "description": "Example mock configurations demonstrating dynamic value generation and response delays",
+    "version": "1.0.0",
+    "exported": "2025-06-13T12:45:00.000Z"
+  },
+  "totalMocks": 5,
+  "mocks": [
+    {
+      "id": "example-user-profile",
+      "name": "Dynamic User Profile",
+      "method": "GET",
+      "path": "/api/user/profile",
+      "headers": {},
+      "response": {
+        "user": {
+          "id": "{{uuid}}",
+          "name": "{{name}}",
+          "email": "{{email}}",
+          "phone": "{{phone}}",
+          "avatar": "{{avatar}}",
+          "created": "{{timestamp}}",
+          "lastLogin": "{{date}}",
+          "status": "{{oneOf:active,inactive,pending}}"
+        },
+        "preferences": {
+          "theme": "{{oneOf:light,dark,auto}}",
+          "language": "{{oneOf:en,es,fr,de}}",
+          "notifications": "{{boolean}}"
+        },
+        "stats": {
+          "loginCount": "{{number:1:1000}}",
+          "score": "{{float:0:100}}"
+        }
+      },
+      "statusCode": 200,
+      "delay": {
+        "type": "random",
+        "min": 100,
+        "max": 500
+      },
+      "dynamic": true
+    },
+    {
+      "id": "example-product-list",
+      "name": "Dynamic Product List",
+      "method": "GET",
+      "path": "/api/products",
+      "headers": {},
+      "response": {
+        "products": "{{arrayOf:5:product}}",
+        "pagination": {
+          "total": "{{number:50:200}}",
+          "page": 1,
+          "limit": 10
+        },
+        "generated": "{{timestamp}}"
+      },
+      "statusCode": 200,
+      "delay": {
+        "type": "network"
+      },
+      "dynamic": true
+    },
+    {
+      "id": "example-order-create",
+      "name": "Create Order with Dynamic Response",
+      "method": "POST",
+      "path": "/api/orders",
+      "headers": {},
+      "response": {
+        "orderId": "{{uuid}}",
+        "status": "created",
+        "customer": {
+          "name": "{{name}}",
+          "email": "{{email}}",
+          "address": "{{address}}, {{city}}, {{country}}"
+        },
+        "items": "{{arrayOf:3:item}}",
+        "total": "{{float:10:500}}",
+        "created": "{{timestamp}}",
+        "estimatedDelivery": "{{date}}"
+      },
+      "statusCode": 201,
+      "delay": 800,
+      "dynamic": true
+    },
+    {
+      "id": "example-company-info",
+      "name": "Company Information",
+      "method": "GET",
+      "path": "/api/company",
+      "headers": {},
+      "response": {
+        "company": {
+          "id": "{{uuid}}",
+          "name": "{{company}}",
+          "domain": "{{domain}}",
+          "employees": "{{number:10:5000}}",
+          "founded": "{{number:1950:2020}}"
+        },
+        "contact": {
+          "email": "info@{{domain}}",
+          "phone": "{{phone}}",
+          "address": "{{address}}, {{city}}, {{zipcode}}"
+        },
+        "metadata": {
+          "requestId": "{{requestId}}",
+          "timestamp": "{{timestamp}}",
+          "userAgent": "{{userAgent}}",
+          "path": "{{requestPath}}"
+        }
+      },
+      "statusCode": 200,
+      "delay": {
+        "type": "fixed",
+        "min": 200
+      },
+      "dynamic": true
+    },
+    {
+      "id": "example-static-config",
+      "name": "Static Configuration (No Dynamic)",
+      "method": "GET",
+      "path": "/api/config",
+      "headers": {},
+      "response": {
+        "version": "1.0.0",
+        "features": ["auth", "logging", "caching"],
+        "environment": "development",
+        "static": true
+      },
+      "statusCode": 200,
+      "delay": null,
+      "dynamic": false
+    }
+  ]
+}

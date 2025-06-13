@@ -7,6 +7,7 @@ const logger = require('./logger');
 const { router: mockRoutes, mockStore } = require('./routes/mockRoutes');
 const { findMock } = require('../utils/matcher');
 const { loadMocks } = require('../utils/storageStrategy');
+const dynamicResponse = require('../utils/dynamicResponse');
 
 /**
  * Dynamic Mock Server
@@ -45,7 +46,7 @@ app.get(`${API_PREFIX}/config`, (req, res) => {
 });
 
 // Mock matching middleware - use middleware instead of app.all('*')
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     const skipPaths = [
         `${API_PREFIX}/health`,
         `${API_PREFIX}/config`,
@@ -67,14 +68,36 @@ app.use((req, res, next) => {
             : '';
         logger.info(`🎭 Matched mock "${mock.name}" for ${req.method} ${req.path}${headerInfo}`);
         
-        // Set response headers if mock specifies them
-        if (mock.responseHeaders) {
-            Object.entries(mock.responseHeaders).forEach(([key, value]) => {
-                res.set(key, value);
-            });
+        try {
+            // Process dynamic response with delays and dynamic values
+            const { response: processedResponse, metadata } = await dynamicResponse.processResponse(mock, req);
+            
+            // Set response headers if mock specifies them
+            if (mock.responseHeaders) {
+                Object.entries(mock.responseHeaders).forEach(([key, value]) => {
+                    res.set(key, value);
+                });
+            }
+            
+            // Add metadata headers for debugging
+            if (metadata.dynamicValues) {
+                res.set('X-Mock-Dynamic', 'true');
+            }
+            if (metadata.processingTime > 0) {
+                res.set('X-Mock-Processing-Time', `${metadata.processingTime}ms`);
+            }
+            res.set('X-Mock-Generated', metadata.generated);
+            
+            if (mock.delay) {
+                logger.info(`⏱️ Applied ${metadata.processingTime}ms delay for mock "${mock.name}"`);
+            }
+            
+            return res.status(mock.statusCode || 200).json(processedResponse);
+        } catch (error) {
+            logger.error(`❌ Error processing dynamic response: ${error.message}`);
+            // Fallback to static response
+            return res.status(mock.statusCode || 200).json(mock.response);
         }
-        
-        return res.status(mock.statusCode || 200).json(mock.response);
     } else {
         // Filter out common development tool and browser requests to reduce log noise
         const commonDevPaths = [

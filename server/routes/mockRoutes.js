@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const logger = require('../logger');
 const { saveMocks } = require('../../utils/storageStrategy');
 const { isUniqueMock, findMock } = require('../../utils/matcher');
+const dynamicResponse = require('../../utils/dynamicResponse');
 
 const router = express.Router();
 const mockStore = []; // In-memory store (can later be persisted or DB-backed)
@@ -16,7 +17,16 @@ router.get('/', (req, res) => {
 // POST /mocks - Register a new mock
 router.post('/', (req, res) => {
     try {
-        const { name, method, path, headers = {}, response, statusCode = 200 } = req.body;
+        const { 
+            name, 
+            method, 
+            path, 
+            headers = {}, 
+            response, 
+            statusCode = 200,
+            delay = null,
+            dynamic = false 
+        } = req.body;
 
         if (!name || !method || !path || !response) {
             logger.warn('❌ Missing required fields in mock registration');
@@ -30,7 +40,9 @@ router.post('/', (req, res) => {
             path,
             headers,
             response,
-            statusCode
+            statusCode,
+            delay,
+            dynamic
         };
 
         // Check for uniqueness
@@ -152,7 +164,16 @@ router.post('/test', (req, res) => {
 router.put('/:id', (req, res) => {
     try {
         const { id } = req.params;
-        const { name, method, path, headers = {}, response, statusCode = 200 } = req.body;
+        const { 
+            name, 
+            method, 
+            path, 
+            headers = {}, 
+            response, 
+            statusCode = 200,
+            delay = null,
+            dynamic = false 
+        } = req.body;
 
         if (!name || !method || !path || !response) {
             logger.warn('❌ Missing required fields in mock update');
@@ -172,7 +193,9 @@ router.put('/:id', (req, res) => {
             path,
             headers,
             response,
-            statusCode
+            statusCode,
+            delay,
+            dynamic
         };
 
         // Check for uniqueness (excluding the current mock)
@@ -444,6 +467,67 @@ router.get('/export/httpie', (req, res) => {
         
     } catch (err) {
         logger.error(`❌ Error generating HTTPie commands: ${err.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// GET /mocks/placeholders - Get available dynamic placeholders
+router.get('/placeholders', (req, res) => {
+    try {
+        const placeholders = dynamicResponse.getAvailablePlaceholders();
+        logger.info('📋 Returning available dynamic placeholders');
+        res.json({
+            categories: placeholders,
+            examples: {
+                basicUser: {
+                    id: "{{uuid}}",
+                    name: "{{name}}",
+                    email: "{{email}}",
+                    createdAt: "{{timestamp}}"
+                },
+                dynamicDelay: {
+                    delay: { min: 100, max: 1000, type: "random" }
+                },
+                businessData: {
+                    company: "{{company}}",
+                    employees: "{{arrayOf:5:name}}",
+                    revenue: "{{float:10000:50000}}"
+                }
+            },
+            delayTypes: {
+                fixed: "Fixed delay in milliseconds",
+                random: "Random delay between min and max",
+                network: "Simulate realistic network delays"
+            }
+        });
+    } catch (err) {
+        logger.error(`❌ Error getting placeholders: ${err.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// POST /mocks/preview - Preview dynamic response without saving
+router.post('/preview', async (req, res) => {
+    try {
+        const { response, delay = null } = req.body;
+        
+        if (!response) {
+            return res.status(400).json({ error: 'response is required for preview' });
+        }
+        
+        const mockConfig = { response, delay, dynamic: true };
+        const { response: processedResponse, metadata } = await dynamicResponse.processResponse(mockConfig, req);
+        
+        logger.info('👀 Generated response preview');
+        res.json({
+            original: response,
+            processed: processedResponse,
+            metadata,
+            hasDynamicValues: dynamicResponse.hasDynamicValues(response)
+        });
+        
+    } catch (err) {
+        logger.error(`❌ Error generating preview: ${err.message}`);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });

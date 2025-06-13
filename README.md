@@ -1,6 +1,21 @@
 # 🌊 Dynamic Mock Server
 
+![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![Features](https://img.shields.io/badge/Features-Dynamic%20Values%20%26%20Delays-blue)
+![UI](https://img.shields.io/badge/UI-Liquid%20Glass%20Theme-purple)
+![Integration](https://img.shields.io/badge/Export-JSON%20%7C%20Postman%20%7C%20HTTPie-orange)
+
 A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities. Configure and simulate API responses easily for local testing, demos, or prototyping – all with a beautiful frontend and modular backend.
+
+## 🏆 Key Achievements
+
+**🎯 Production-Ready**: Complete CRUD operations, persistent storage, and robust error handling  
+**🎲 Dynamic & Intelligent**: 60+ Faker.js placeholders with realistic response delays  
+**🔄 Integration-Friendly**: Export to JSON, Postman collections, and HTTPie commands  
+**🎨 Modern UX**: Liquid glass UI with keyboard shortcuts and smart notifications  
+**📚 Well-Documented**: Comprehensive guides, examples, and API reference  
+
+> *Ready for real-world use with enterprise-grade features and developer-focused design*
 
 ---
 
@@ -12,6 +27,12 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   - Custom response body (as JSON) with status codes
   - Edit existing mocks with full validation
   - Delete mocks with confirmation dialogs
+- 🎲 **Dynamic Values & Response Delays**:
+  - Dynamic value generation using Faker.js (names, emails, timestamps, UUIDs, etc.)
+  - Template placeholders for realistic data ({{name}}, {{email}}, {{timestamp}})
+  - Response delays (fixed, random, network simulation)
+  - Preview functionality for testing dynamic responses
+  - 60+ built-in placeholder types across multiple categories
 - 📦 **Persistent Storage**: File-based mock storage (`mockStore.json`)
 - 👁️ **Rich UI Experience**: 
   - Modal-based mock viewer with full details
@@ -55,10 +76,13 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   └── mock-config.json        # Persistent mock storage
 
 /docs
-  └── HEADER_ROUTING.md       # Documentation for header-based routing
+  ├── HEADER_ROUTING.md       # Documentation for header-based routing
+  ├── DYNAMIC_VALUES_AND_DELAYS.md  # Complete guide to dynamic values and delays
+  └── DYNAMIC_VALUES_CHEAT_SHEET.md # Quick reference for placeholders and delays
 
 /examples
-  └── header-routing-examples.json  # Example configurations
+  ├── header-routing-examples.json  # Example configurations
+  └── dynamic-values-examples.json  # Dynamic values and delay examples
 ```
 
 ---
@@ -85,7 +109,31 @@ npm start
 
 Open: [http://localhost:8080](http://localhost:8080)
 
-### 3. Build & Development Commands
+### 3. Quick Start with Dynamic Values
+
+1. **Create a Dynamic Mock**:
+   - Click "➕ Add Mock" 
+   - Fill in basic details (name, method, path)
+   - Expand "⚙️ Advanced Options"
+   - Check "Enable dynamic value generation"
+   - Use placeholders in response: `{"user": "{{name}}", "id": "{{uuid}}"}`
+   - Set delay type (optional): Fixed, Random, or Network simulation
+
+2. **Test Your Dynamic Mock**:
+   ```bash
+   curl http://localhost:8080/api/user
+   # Returns: {"user": "Jane Smith", "id": "a1b2c3d4-..."}
+   
+   curl http://localhost:8080/api/user  
+   # Returns: {"user": "Bob Johnson", "id": "x9y8z7w6-..."}
+   ```
+
+3. **Explore Placeholders**:
+   - Click "📋 Show Placeholders" to see all 60+ options
+   - Use the preview generator to test templates
+   - Copy examples from the documentation
+
+### 4. Build & Development Commands
 
 ```bash
 # CSS Development (watch mode)
@@ -98,7 +146,7 @@ npm run build-css-prod
 npm test
 ```
 
-### 4. Environment Configuration
+### 5. Environment Configuration
 
 ```bash
 # Optional environment variables (create .env file)
@@ -136,6 +184,30 @@ Content-Type: application/json
   "path": "/api/user",
   "headers": {"x-mock-type": "success"},
   "response": {"id": 1, "name": "John Doe"},
+  "statusCode": 200
+}
+
+# Create a dynamic mock with delays
+POST http://localhost:8080/api/mocks
+Content-Type: application/json
+{
+  "name": "Dynamic User Profile",
+  "method": "GET",
+  "path": "/api/user/profile",
+  "response": {
+    "user": {
+      "id": "{{uuid}}",
+      "name": "{{name}}",
+      "email": "{{email}}",
+      "created": "{{timestamp}}"
+    }
+  },
+  "delay": {
+    "type": "random",
+    "min": 200,
+    "max": 800
+  },
+  "dynamic": true,
   "statusCode": 200
 }
 
@@ -206,6 +278,22 @@ x-mock-type: success
 
 ---
 
+## 📚 Documentation
+
+- **[🎲 Dynamic Values & Response Delays Guide](docs/DYNAMIC_VALUES_AND_DELAYS.md)** - Complete guide to dynamic value generation and sleep/delay functionality
+- **[� Dynamic Values Cheat Sheet](docs/DYNAMIC_VALUES_CHEAT_SHEET.md)** - Quick reference for placeholders and delays
+- **[�🔗 Header Routing Guide](docs/HEADER_ROUTING.md)** - Advanced routing with headers
+- **[📁 Examples](examples/)** - Ready-to-use mock configurations and import files
+
+### Quick Links
+- [Dynamic Placeholders](docs/DYNAMIC_VALUES_AND_DELAYS.md#-dynamic-value-placeholders) - 60+ placeholder types
+- [Response Delays](docs/DYNAMIC_VALUES_AND_DELAYS.md#️-response-delays-sleep) - Simulate network conditions  
+- [Complete Examples](docs/DYNAMIC_VALUES_AND_DELAYS.md#-complete-examples) - Real-world use cases
+- [Cheat Sheet](docs/DYNAMIC_VALUES_CHEAT_SHEET.md) - Quick reference guide
+- [Best Practices](docs/DYNAMIC_VALUES_AND_DELAYS.md#-best-practices) - Tips for effective mocking
+
+---
+
 ## ✅ Recent Updates & Improvements
 
 ### 🎨 **UI/UX Enhancements**
@@ -214,54 +302,109 @@ x-mock-type: success
 - [x] **Smart Notifications**: Contextual notifications with auto-dismiss and click-to-close
 - [x] **Improved Modal System**: Enhanced modal centering and responsive design
 
-### 🔧 **Technical Improvements**
-- [x] **Notification System Optimization**: Eliminated redundant "Loaded X mocks" notifications after delete/edit operations
-- [x] **Global State Management**: Improved mock list refresh handling for better UX
-- [x] **Enhanced Error Handling**: Better error messages and validation feedback
-- [x] **Intelligent Log Filtering**: Suppresses noise from dev tools and browser requests (Chrome DevTools, favicon, etc.)
-- [x] **Code Architecture**: Modular JavaScript functions for better maintainability
+---
 
-### 🛠️ **Core Features Completed**
-- [x] **Complete CRUD Operations**: Create, Read, Update, Delete mocks with full validation
-- [x] **Header-based Routing**: Advanced mock matching with optional headers
+## ✅ Completed Features
+
+### 🎯 **Core Functionality** 
+- [x] **Complete Mock Management**: Full CRUD operations with validation
+- [x] **Header-based Routing**: Advanced request matching with optional headers
 - [x] **Mock Analysis**: Conflict detection and duplicate identification
 - [x] **Persistent Storage**: File-based mock storage with automatic saving
 - [x] **Request Testing**: Built-in mock testing and matching validation
 - [x] **Modern UI**: Liquid glass design with responsive layouts
 
+### 🎲 **Dynamic Values & Delays**
+- [x] **Dynamic Value Generation**: 60+ Faker.js placeholders ({{name}}, {{email}}, {{uuid}}, etc.)
+- [x] **Response Delays**: Fixed, random, and network simulation delays
+- [x] **Template System**: Flexible placeholder system for realistic data
+- [x] **Preview Functionality**: Test dynamic responses before saving
+- [x] **Real-time Generation**: Live dynamic value processing
+
+### 🔄 **Export/Import & Integration**
+- [x] **JSON Export/Import**: Complete mock collections with metadata
+- [x] **Postman Integration**: Auto-generate Postman collections from saved mocks
+- [x] **HTTPie Commands**: Generate corresponding HTTPie test commands
+- [x] **File Upload**: Drag-and-drop or file selector import
+- [x] **JSON Paste**: Direct JSON import via textarea
+
+### 🎨 **User Experience**
+- [x] **Keyboard Shortcuts**: Full keyboard navigation (Ctrl+E, Ctrl+I, Ctrl+P, etc.)
+- [x] **Smart Notifications**: Contextual feedback system with auto-dismiss
+- [x] **Modal System**: Comprehensive modal-based interfaces
+- [x] **Help System**: Built-in help modal with shortcuts and API reference
+- [x] **Icon-based Actions**: Clean, intuitive button design with tooltips
+
+### 🛠️ **Developer Experience**
+- [x] **Comprehensive Logging**: Detailed request/response logging with noise filtering
+- [x] **Error Handling**: Robust error handling with user-friendly messages
+- [x] **API Documentation**: Built-in API reference and usage examples
+- [x] **Live Preview**: Real-time mock testing and validation
+
+### 🔧 **Technical Excellence**
+- [x] **Tailwind CSS v4**: Modern styling with liquid glass theme
+- [x] **Modular Architecture**: Clean separation of concerns
+- [x] **Intelligent Log Filtering**: Noise reduction from dev tools
+- [x] **Global State Management**: Optimized UI state handling
+- [x] **Enhanced Security**: Helmet.js and CORS protection
+
 ---
 
-## 🔮 Roadmap & Future Enhancements
+## 🚀 Next Priority Features
 
-### 📈 **Recently Completed Features**
-- [x] 🔗 **Export/Import**: Complete mock collections export/import functionality with JSON format
-- [x] 📋 **Postman Integration**: Auto-generate Postman collections from saved mocks with example responses
-- [x] 🔧 **HTTPie Commands**: Generate corresponding HTTPie test commands with proper syntax
-- [x] ⌨️ **Keyboard Shortcuts**: Full keyboard navigation support (Ctrl+E, Ctrl+I, Ctrl+P, etc.)
+### 📊 **Analytics & Monitoring**
+- [ ] **Usage Dashboard**: Mock hit statistics and analytics
+- [ ] **Request History**: Comprehensive request logging with search/filter
+- [ ] **Performance Metrics**: Response time tracking and performance insights
+- [ ] **Real-time Monitoring**: Live request monitoring with WebSocket updates
 
-### 📊 **Next Priority Features**
-- [ ] � **Analytics Dashboard**: Mock usage statistics and hit tracking
-- [ ] � **Mock Versioning**: Version control for mock collections
-- [ ] � **Advanced Search**: Search mocks by content, headers, and response data
+### � **Advanced Matching**
+- [ ] **Wildcard Paths**: Dynamic path matching (e.g., `/api/user/*/profile`)
+- [ ] **Query Parameters**: Query param-based mock resolution
+- [ ] **Body Matching**: Request body content-based routing
+- [ ] **Regex Support**: Regular expression matching for paths and headers
 
-### 🚀 **Advanced Features**
-- [ ] ✨ **Wildcard Paths**: Support for dynamic path matching (e.g., `/api/user/*`)
-- [ ] 🔍 **Query Parameters**: Query param-based mock resolution
-- [ ] ⏱️ **Response Delays**: Configurable response delay simulation
-- [ ] 🎲 **Dynamic Values**: Timestamp, UUIDs, and random data generation
-- [ ] � **Request Logging**: Comprehensive request history and logging panel
+### 🎲 **Enhanced Dynamic Features**
+- [ ] **Custom Scripts**: User-defined JavaScript for advanced response generation
+- [ ] **State Management**: Stateful mocks that remember previous requests
+- [ ] **Conditional Logic**: If/else logic in dynamic responses
+- [ ] **External Data Sources**: Integration with APIs/databases for dynamic content
 
-### �️ **Security & Production**
-- [ ] 🔐 **Environment Toggles**: Dev/prod configuration for CORS & security
-- [ ] 🗄️ **Database Support**: SQLite and PostgreSQL integration
-- [ ] 🔑 **Authentication**: JWT-based admin panel and mock protection
-- [ ] 🔒 **Encrypted Storage**: Secure mock storage options
+### 🔧 **Workflow & Collaboration**
+- [ ] **Mock Versioning**: Version control for mock collections with diff views
+- [ ] **Team Sharing**: Cloud sync and collaboration features
+- [ ] **Template Library**: Pre-built mock templates for common scenarios
+- [ ] **Bulk Operations**: Mass edit/delete/export operations
 
-### 🧠 **AI & Intelligence**
-- [ ] 🤖 **AI Response Suggestions**: Machine learning-based response generation
-- [ ] � **OpenAPI Integration**: Swagger/OpenAPI to mock converter
-- [ ] 🧰 **CLI Tool**: Command-line interface for mock management
-- [ ] � **Mobile App**: Mobile interface for mock management
+---
+
+## 🔮 Future Enhancements
+
+### 🏢 **Enterprise Features**
+- [ ] **Multi-environment**: Dev/staging/prod environment management
+- [ ] **Database Support**: SQLite and PostgreSQL integration
+- [ ] **Authentication**: JWT-based admin panel and mock protection
+- [ ] **RBAC**: Role-based access control for team environments
+
+### � **AI & Intelligence**
+- [ ] **AI Response Suggestions**: ML-based response generation from real API patterns
+- [ ] **OpenAPI Integration**: Swagger/OpenAPI to mock converter with validation
+- [ ] **Auto-learning**: Automatically create mocks from real API traffic
+- [ ] **Smart Suggestions**: Context-aware placeholder and pattern suggestions
+
+### 🔗 **Integrations & Tools**
+- [ ] **CLI Tool**: Command-line interface for mock management and CI/CD
+- [ ] **Browser Extension**: Quick mock creation from browser requests
+- [ ] **IDE Plugins**: VS Code/IntelliJ plugins for mock management
+- [ ] **Docker Support**: Containerized deployment options
+
+### 📱 **Platform Extensions**
+- [ ] **Mobile App**: iOS/Android interface for mock management
+- [ ] **Desktop App**: Electron-based desktop application
+- [ ] **API Gateway**: Mock server as microservice with service discovery
+- [ ] **GraphQL Support**: GraphQL mock endpoint generation
+
+---
 
 ## 🚀 Technology Stack
 
