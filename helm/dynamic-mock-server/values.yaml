@@ -1,0 +1,185 @@
+# Default values for dynamic-mock-server.
+# This is a YAML-formatted file.
+# Declare variables to be substituted into your templates.
+
+replicaCount: 2
+
+image:
+  repository: rapidcoderx/dynamic-mock-server
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 2000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+  metricsPort: 9464
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: dynamic-mock-server.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: dynamic-mock-server-tls
+  #    hosts:
+  #      - dynamic-mock-server.local
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Environment variables
+env:
+  PORT: "8080"
+  METRICS_PORT: "9464"
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+
+# Configuration for the mock server
+config:
+  # Database configuration
+  database:
+    type: "memory" # Options: memory, mongodb, postgresql
+    mongodb:
+      uri: ""
+      database: "dynamic_mock_server"
+    postgresql:
+      host: ""
+      port: 5432
+      database: "dynamic_mock_server"
+      username: ""
+      password: ""
+      ssl: false
+  
+  # OpenTelemetry configuration
+  opentelemetry:
+    enabled: true
+    serviceName: "dynamic-mock-server"
+    prometheusEnabled: true
+    
+  # Security configuration
+  security:
+    cors:
+      enabled: true
+      origin: "*"
+    helmet:
+      enabled: true
+    rateLimit:
+      enabled: true
+      windowMs: 900000 # 15 minutes
+      max: 100 # limit each IP to 100 requests per windowMs
+
+# Persistence for analytics data (if using file storage)
+persistence:
+  enabled: false
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  storageClass: ""
+
+# Service Monitor for Prometheus
+serviceMonitor:
+  enabled: false
+  namespace: ""
+  labels: {}
+  interval: 30s
+  path: /metrics
+
+# Network Policy
+networkPolicy:
+  enabled: false
+  ingress:
+    enabled: true
+    from: []
+  egress:
+    enabled: true
+    to: []
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Health check configuration
+healthcheck:
+  enabled: true
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /api/health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Istio configuration (optional)
+istio:
+  enabled: false
+  gateway:
+    enabled: false
+    hosts:
+      - dynamic-mock-server.local
+    tls:
+      httpsRedirect: true
+  virtualService:
+    enabled: false
+    gateways:
+      - dynamic-mock-server-gateway

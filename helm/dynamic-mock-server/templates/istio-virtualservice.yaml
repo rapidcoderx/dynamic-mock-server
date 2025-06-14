@@ -1,0 +1,26 @@
+{{- if and .Values.istio.enabled .Values.istio.virtualService.enabled }}
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "dynamic-mock-server.fullname" . }}-vs
+  labels:
+    {{- include "dynamic-mock-server.labels" . | nindent 4 }}
+spec:
+  hosts:
+    {{- range .Values.istio.gateway.hosts }}
+    - {{ . | quote }}
+    {{- end }}
+  gateways:
+    {{- range .Values.istio.virtualService.gateways }}
+    - {{ . | quote }}
+    {{- end }}
+  http:
+    - match:
+        - uri:
+            prefix: "/"
+      route:
+        - destination:
+            host: {{ include "dynamic-mock-server.fullname" . }}
+            port:
+              number: {{ .Values.service.port }}
+{{- end }}

@@ -1,0 +1,27 @@
+apiVersion: v2
+name: dynamic-mock-server
+description: A sleek, modern mock server with liquid-glass UI and dynamic API capabilities
+type: application
+version: 1.0.0-mvp
+appVersion: "1.0.0-mvp"
+
+home: https://github.com/rapidcoderx/dynamic-mock-server
+sources:
+  - https://github.com/rapidcoderx/dynamic-mock-server
+
+maintainers:
+  - name: Sathish Kumar
+    email: rapidcoderx@gmail.com
+
+keywords:
+  - mock-server
+  - api
+  - testing
+  - nodejs
+  - express
+  - opentelemetry
+  - prometheus
+
+annotations:
+  category: Development
+  licenses: MIT

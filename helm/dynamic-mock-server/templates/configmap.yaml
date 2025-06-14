@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dynamic-mock-server.configmapName" . }}
+  labels:
+    {{- include "dynamic-mock-server.labels" . | nindent 4 }}
+data:
+  PORT: {{ .Values.env.PORT | quote }}
+  METRICS_PORT: {{ .Values.env.METRICS_PORT | quote }}
+  NODE_ENV: {{ .Values.env.NODE_ENV | quote }}
+  LOG_LEVEL: {{ .Values.env.LOG_LEVEL | quote }}
+  DATABASE_TYPE: {{ .Values.config.database.type | quote }}
+  {{- if eq .Values.config.database.type "mongodb" }}
+  MONGODB_DATABASE: {{ .Values.config.database.mongodb.database | quote }}
+  {{- end }}
+  {{- if eq .Values.config.database.type "postgresql" }}
+  POSTGRES_DATABASE: {{ .Values.config.database.postgresql.database | quote }}
+  POSTGRES_HOST: {{ .Values.config.database.postgresql.host | quote }}
+  POSTGRES_PORT: {{ .Values.config.database.postgresql.port | quote }}
+  POSTGRES_SSL: {{ .Values.config.database.postgresql.ssl | quote }}
+  {{- end }}
+  OTEL_ENABLED: {{ .Values.config.opentelemetry.enabled | quote }}
+  OTEL_SERVICE_NAME: {{ .Values.config.opentelemetry.serviceName | quote }}
+  PROMETHEUS_ENABLED: {{ .Values.config.opentelemetry.prometheusEnabled | quote }}
+  CORS_ENABLED: {{ .Values.config.security.cors.enabled | quote }}
+  CORS_ORIGIN: {{ .Values.config.security.cors.origin | quote }}
+  HELMET_ENABLED: {{ .Values.config.security.helmet.enabled | quote }}
+  RATE_LIMIT_ENABLED: {{ .Values.config.security.rateLimit.enabled | quote }}
+  RATE_LIMIT_WINDOW_MS: {{ .Values.config.security.rateLimit.windowMs | quote }}
+  RATE_LIMIT_MAX: {{ .Values.config.security.rateLimit.max | quote }}

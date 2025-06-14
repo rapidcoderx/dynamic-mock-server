@@ -1,15 +1,32 @@
 {
-  "name": "dynamics-mock-server",
-  "version": "1.0.0",
+  "name": "dynamic-mock-server",
+  "version": "1.0.0-mvp",
   "description": "A sleek, modern mock server with liquid-glass UI and dynamic API capabilities",
   "license": "MIT",
   "author": "Sathish Kumar",
-  "main": "index.js",
+  "main": "server/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rapidcoderx/dynamic-mock-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rapidcoderx/dynamic-mock-server/issues"
+  },
+  "homepage": "https://github.com/rapidcoderx/dynamic-mock-server#readme",
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
     "setup-db": "./scripts/setup-database.sh",
     "validate": "node scripts/validate-setup.js",
+    "docker:build": "docker build -t rapidcoderx/dynamic-mock-server:latest .",
+    "docker:run": "docker run -p 8080:8080 -p 9464:9464 rapidcoderx/dynamic-mock-server:latest",
+    "k8s:deploy": "./scripts/k8s/deploy.sh",
+    "k8s:cleanup": "./scripts/k8s/cleanup.sh",
+    "helm:deploy": "./scripts/helm/deploy.sh",
+    "helm:cleanup": "./scripts/helm/cleanup.sh",
+    "helm:deploy:dev": "./scripts/helm/deploy.sh development",
+    "helm:deploy:prod": "./scripts/helm/deploy.sh production",
+    "helm:deploy:istio": "./scripts/helm/deploy.sh istio",
     "ncu": "ncu -u",
     "build-css": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
     "build-css-prod": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify",

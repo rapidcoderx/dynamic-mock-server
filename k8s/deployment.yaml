@@ -1,0 +1,136 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dynamic-mock-server
+  namespace: dynamic-mock-server
+  labels:
+    app: dynamic-mock-server
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dynamic-mock-server
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: dynamic-mock-server
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9464"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: dynamic-mock-server
+      containers:
+      - name: dynamic-mock-server
+        image: rapidcoderx/dynamic-mock-server:1.0.0-mvp
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 9464
+          name: metrics
+          protocol: TCP
+        env:
+        # Load configuration from ConfigMap
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: dynamic-mock-server-config
+              key: PORT
+        - name: API_PREFIX
+          valueFrom:
+            configMapKeyRef:
+              name: dynamic-mock-server-config
+              key: API_PREFIX
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: dynamic-mock-server-config
+              key: NODE_ENV
+        - name: STORAGE_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: dynamic-mock-server-config
+              key: STORAGE_TYPE
+        - name: ENABLE_OTEL
+          valueFrom:
+            configMapKeyRef:
+              name: dynamic-mock-server-config
+              key: ENABLE_OTEL
+        - name: OTEL_SERVICE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: dynamic-mock-server-config
+              key: OTEL_SERVICE_NAME
+        - name: ENABLE_ANALYTICS
+          valueFrom:
+            configMapKeyRef:
+              name: dynamic-mock-server-config
+              key: ENABLE_ANALYTICS
+        - name: ENABLE_CORS
+          valueFrom:
+            configMapKeyRef:
+              name: dynamic-mock-server-config
+              key: ENABLE_CORS
+        - name: ENABLE_HELMET
+          valueFrom:
+            configMapKeyRef:
+              name: dynamic-mock-server-config
+              key: ENABLE_HELMET
+        
+        # Load secrets (uncomment when using database storage)
+        # - name: POSTGRES_PASSWORD
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: dynamic-mock-server-secrets
+        #       key: POSTGRES_PASSWORD
+        # - name: POSTGRES_USER
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: dynamic-mock-server-secrets
+        #       key: POSTGRES_USER
+        
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        
+        volumeMounts:
+        - name: mock-data
+          mountPath: /app/mocks
+        - name: logs
+          mountPath: /app/logs
+      
+      volumes:
+      - name: mock-data
+        persistentVolumeClaim:
+          claimName: dynamic-mock-server-pvc
+      - name: logs
+        emptyDir: {}
+      
+      restartPolicy: Always

@@ -1,0 +1,98 @@
+# Istio values for dynamic-mock-server
+# This is a YAML-formatted file for Istio service mesh deployment
+
+replicaCount: 2
+
+image:
+  repository: rapidcoderx/dynamic-mock-server
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+# Database configuration
+config:
+  database:
+    type: "postgresql"
+    postgresql:
+      host: "postgresql"
+      port: 5432
+      database: "dynamic_mock_server"
+      username: "postgres"
+      password: "postgres"
+      ssl: false
+
+# Disable regular ingress - using Istio Gateway instead
+ingress:
+  enabled: false
+
+# Istio configuration
+istio:
+  enabled: true
+  gateway:
+    enabled: true
+    hosts:
+      - "dynamic-mock-server.example.com"
+    tls:
+      httpsRedirect: true
+  virtualService:
+    enabled: true
+    gateways:
+      - "dynamic-mock-server-gateway"
+
+# Service configuration - ClusterIP for Istio
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+  metricsPort: 9464
+
+# Pod annotations for Istio sidecar injection
+podAnnotations:
+  sidecar.istio.io/inject: "true"
+  sidecar.istio.io/proxyCPU: "100m"
+  sidecar.istio.io/proxyMemory: "128Mi"
+
+# Monitoring
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  path: /metrics
+
+# Security
+networkPolicy:
+  enabled: false  # Istio handles network policies
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# Auto scaling
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80

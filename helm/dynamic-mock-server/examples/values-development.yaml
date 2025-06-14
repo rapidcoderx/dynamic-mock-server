@@ -1,0 +1,83 @@
+# Development values for dynamic-mock-server
+# This is a YAML-formatted file for development deployment
+
+replicaCount: 1
+
+image:
+  repository: rapidcoderx/dynamic-mock-server
+  pullPolicy: Always
+  tag: "latest"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+
+# Database configuration - using in-memory for development
+config:
+  database:
+    type: "memory"
+  
+  # OpenTelemetry configuration
+  opentelemetry:
+    enabled: true
+    serviceName: "dynamic-mock-server-dev"
+    prometheusEnabled: true
+    
+  # Security configuration - relaxed for development
+  security:
+    cors:
+      enabled: true
+      origin: "*"
+    helmet:
+      enabled: false
+    rateLimit:
+      enabled: false
+
+env:
+  NODE_ENV: "development"
+  LOG_LEVEL: "debug"
+
+# Ingress configuration - disabled for development
+ingress:
+  enabled: false
+
+# Persistence - disabled for development
+persistence:
+  enabled: false
+
+# Monitoring - simplified for development
+serviceMonitor:
+  enabled: false
+
+# Security - disabled for development
+networkPolicy:
+  enabled: false
+
+# Pod Disruption Budget - disabled for development
+podDisruptionBudget:
+  enabled: false
+
+# Relaxed security context for development
+podSecurityContext: {}
+
+securityContext:
+  runAsNonRoot: false
+
+# Node placement - no restrictions for development
+nodeSelector: {}
+affinity: {}
+tolerations: []
+
+# Service configuration for easy access
+service:
+  type: NodePort
+  port: 8080
+  targetPort: 8080
+  metricsPort: 9464

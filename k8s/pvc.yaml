@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dynamic-mock-server-pvc
+  namespace: dynamic-mock-server
+  labels:
+    app: dynamic-mock-server
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard  # Change to your preferred storage class

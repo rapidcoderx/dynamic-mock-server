@@ -1,0 +1,43 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: dynamic-mock-server-gateway
+  namespace: dynamic-mock-server
+  labels:
+    app: dynamic-mock-server
+spec:
+  selector:
+    istio: ingressgateway  # Use default istio ingress gateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "mock-server.local"  # Change to your domain
+    - "mock-server.example.com"  # Change to your domain
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: mock-server-tls  # Reference to TLS secret
+    hosts:
+    - "mock-server.local"  # Change to your domain
+    - "mock-server.example.com"  # Change to your domain
+
+---
+# TLS Certificate Secret (create this with your actual certificates)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mock-server-tls
+  namespace: istio-system  # Must be in istio-system namespace
+  labels:
+    app: dynamic-mock-server
+type: kubernetes.io/tls
+data:
+  # Add your base64 encoded certificate and key
+  # tls.crt: LS0tLS1CRUdJTi...  # Your certificate
+  # tls.key: LS0tLS1CRUdJTi...  # Your private key

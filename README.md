@@ -136,6 +136,8 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 
 /docs
   ├── README.md               # Main documentation
+  ├── HELM_DEPLOYMENT.md      # Complete Helm deployment guide
+  ├── KUBERNETES_DEPLOYMENT.md # Raw Kubernetes deployment guide
   ├── HEADER_ROUTING.md       # Header-based routing docs
   ├── QUERY_PARAMETER_ROUTING.md # Query param routing docs
   ├── DYNAMIC_VALUES_AND_DELAYS.md # Dynamic mocks guide
@@ -144,7 +146,55 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   ├── ANALYTICS_IMPLEMENTATION.md # Analytics dashboard implementation details
   ├── ANALYTICS_FILTERING.md  # Analytics request filtering documentation
   ├── ANALYTICS_CLEANUP.md    # Analytics database cleanup utilities
-  └── POSTGRESQL_ANALYTICS_SOLUTION.md # PostgreSQL analytics integration guide
+  ├── POSTGRESQL_ANALYTICS_SOLUTION.md # PostgreSQL analytics integration guide
+  ├── MVP_RELEASE_CHECKLIST.md # MVP release preparation checklist
+  ├── CHANGELOG.md            # Version history and release notes
+  └── RELEASE_NOTES.md        # Latest release information
+
+/helm
+  └── dynamic-mock-server/    # Helm chart for Kubernetes deployment
+      ├── Chart.yaml          # Helm chart metadata
+      ├── values.yaml         # Default configuration values
+      ├── README.md           # Helm chart documentation
+      ├── templates/          # Kubernetes manifest templates
+      │   ├── deployment.yaml # Application deployment
+      │   ├── service.yaml    # Service definition
+      │   ├── ingress.yaml    # Ingress configuration
+      │   ├── configmap.yaml  # Configuration management
+      │   ├── secret.yaml     # Secrets management
+      │   ├── hpa.yaml        # Horizontal Pod Autoscaler
+      │   ├── pvc.yaml        # Persistent Volume Claims
+      │   ├── servicemonitor.yaml # Prometheus monitoring
+      │   ├── networkpolicy.yaml  # Network policies
+      │   ├── poddisruptionbudget.yaml # Pod disruption budget
+      │   ├── istio-gateway.yaml      # Istio Gateway
+      │   ├── istio-virtualservice.yaml # Istio VirtualService
+      │   └── tests/          # Helm test templates
+      └── examples/           # Example values files
+          ├── values-development.yaml # Development environment
+          ├── values-production.yaml  # Production environment
+          └── values-istio.yaml       # Istio service mesh
+
+/k8s
+  ├── namespace.yaml          # Kubernetes namespace
+  ├── configmap.yaml          # Configuration data
+  ├── secrets.yaml            # Secret data templates
+  ├── deployment.yaml         # Application deployment
+  ├── service.yaml            # Service definition
+  ├── pvc.yaml                # Persistent volume claim
+  ├── rbac.yaml              # Role-based access control
+  ├── hpa.yaml               # Horizontal pod autoscaler
+  ├── istio-gateway.yaml     # Istio gateway configuration
+  └── istio-virtualservice.yaml # Istio virtual service
+
+/scripts
+  ├── setup-database.sh      # Interactive database setup script
+  ├── k8s/                   # Kubernetes deployment scripts
+  │   ├── deploy.sh          # Deploy to Kubernetes
+  │   └── cleanup.sh         # Cleanup Kubernetes resources
+  └── helm/                  # Helm deployment scripts
+      ├── deploy.sh          # Deploy using Helm
+      └── cleanup.sh         # Cleanup Helm releases
 
 /api-collections
   ├── README.md               # API collections documentation
@@ -172,7 +222,9 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 
 ## 🚀 Getting Started
 
-### 1. Install & Run
+### 1. Local Development
+
+#### Install & Run
 
 ```bash
 # Install dependencies
@@ -279,6 +331,81 @@ See **[📡 API Collections](api-collections/)** for complete documentation.
    - Click "📋 Show Placeholders" to see all 60+ options
    - Use the preview generator to test templates
    - Copy examples from the documentation
+
+## 🐳 Docker Deployment
+
+### Quick Start with Docker
+
+```bash
+# Build and run locally
+npm run docker:build
+npm run docker:run
+
+# Access at http://localhost:8080
+```
+
+### Custom Docker Run
+
+```bash
+docker run -p 8080:8080 -p 9464:9464 \
+  -e ENABLE_OTEL=true \
+  -e STORAGE_TYPE=file \
+  -v $(pwd)/mocks:/app/mocks \
+  rapidcoderx/dynamic-mock-server:latest
+```
+
+## ☸️ Kubernetes & Helm Deployment
+
+### 🎯 Helm Charts (Recommended)
+
+Deploy using production-ready Helm charts with multiple environment support:
+
+```bash
+# Development deployment
+npm run helm:deploy:dev
+
+# Production deployment  
+npm run helm:deploy:prod
+
+# Istio service mesh deployment
+npm run helm:deploy:istio
+
+# Custom deployment
+./scripts/helm/deploy.sh production my-namespace my-release
+```
+
+**Helm Features:**
+- **🌍 Multi-environment:** Development, Production, Istio configurations
+- **📊 Monitoring:** ServiceMonitor for Prometheus integration
+- **🔒 Security:** Network policies, RBAC, security contexts
+- **📈 Auto-scaling:** HPA with CPU/memory targets
+- **🗄️ Database:** Support for PostgreSQL, MongoDB, or in-memory
+- **🌐 Ingress:** TLS termination and custom domains
+- **🛡️ Service Mesh:** Native Istio integration
+
+**📚 Complete guide:** [docs/HELM_DEPLOYMENT.md](docs/HELM_DEPLOYMENT.md)
+
+### 🔧 Raw Kubernetes Manifests
+
+For direct Kubernetes deployment without Helm:
+
+```bash
+# Deploy with all resources
+npm run k8s:deploy
+
+# Cleanup when done
+npm run k8s:cleanup
+```
+
+### Production Features
+
+- **🔄 Auto-scaling:** 2-10 replicas based on CPU/memory
+- **💾 Persistent storage:** Survives pod restarts
+- **🌊 Istio support:** Gateway and VirtualService included
+- **📊 Monitoring:** Health checks and metrics endpoints
+- **🛡️ Security:** RBAC and security policies
+
+**📚 Raw K8s guide:** [docs/KUBERNETES_DEPLOYMENT.md](docs/KUBERNETES_DEPLOYMENT.md)
 
 ### 6. Build & Development Commands
 

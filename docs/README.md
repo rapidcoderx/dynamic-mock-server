@@ -2,6 +2,14 @@
 
 This folder contains comprehensive documentation for the Dynamic Mock Server.
 
+## ☸️ Deployment & Operations
+
+- **[HELM_DEPLOYMENT.md](./HELM_DEPLOYMENT.md)** - Complete Helm deployment guide with multi-environment support
+- **[KUBERNETES_DEPLOYMENT.md](./KUBERNETES_DEPLOYMENT.md)** - Raw Kubernetes manifests and deployment guide
+- **[MVP_RELEASE_CHECKLIST.md](./MVP_RELEASE_CHECKLIST.md)** - MVP release preparation checklist
+- **[CHANGELOG.md](./CHANGELOG.md)** - Version history and release notes
+- **[RELEASE_NOTES.md](./RELEASE_NOTES.md)** - Latest release information
+
 ## 📊 Analytics & Monitoring
 
 - **[ANALYTICS_IMPLEMENTATION.md](./ANALYTICS_IMPLEMENTATION.md)** - Complete analytics dashboard implementation guide
