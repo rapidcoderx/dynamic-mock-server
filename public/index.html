@@ -3178,8 +3178,12 @@
                     document.getElementById('avgResponseTime').textContent = (data.performance && data.performance.averageResponseTime) || 0;
                     document.getElementById('uniqueMocks').textContent = (data.overview && data.overview.uniqueMocksHit) || 0;
 
-                    const hitRate = (data.overview && data.overview.totalRequests > 0) 
-                        ? ((data.overview.totalMockHits / data.overview.totalRequests) * 100).toFixed(1)
+                    const totalRequests = (data.overview && data.overview.totalRequests) || 0;
+                    const mockHits = (data.overview && data.overview.totalMockHits) || 0;
+                    
+                    // Ensure hit rate can't exceed 100% (sanity check)
+                    const hitRate = (totalRequests > 0) 
+                        ? (Math.min(mockHits, totalRequests) / totalRequests * 100).toFixed(1)
                         : 0;
                     document.getElementById('hitRate').textContent = `${hitRate}% hit rate`;
                     document.getElementById('requests24h').textContent = `${(data.overview && data.overview.recentRequests24h) || 0} in 24h`;

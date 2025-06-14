@@ -51,19 +51,26 @@ function trackRequest(req, res, next) {
         '/api/analytics',     // Analytics API calls
         '/api/mocks',         // Mock management API calls
         '/api/config',        // Configuration API
+        '/api/docs',          // Swagger UI documentation
+        '/api/health',        // Health check endpoint
         '/favicon.ico',       // Browser favicon requests
-        '/public/',          // Static files
-        '/styles.css',       // CSS files
-        '/icon.svg',         // Icon files
-        '/favicon.svg',      // SVG favicon
-        '/.well-known/'      // Chrome DevTools and browser well-known paths
+        '/public/',           // Static files
+        '/styles.css',        // CSS files
+        '/icon.svg',          // Icon files
+        '/favicon.svg',       // SVG favicon
+        '/.well-known/'       // Chrome DevTools and browser well-known paths
     ];
     
     // Check if this request should be skipped
     const shouldSkip = req.path === '/' || 
                       skipPaths.some(skipPath => req.path.startsWith(skipPath));
     
-    if (shouldSkip) {
+    // Additional check for Swagger UI resources and other documentation paths
+    const isSwaggerOrDocs = req.path.includes('/swagger-ui') || 
+                            req.path.includes('/api-docs') || 
+                            req.path.includes('swagger-ui-init.js');
+    
+    if (shouldSkip || isSwaggerOrDocs) {
         return next();
     }
     
@@ -433,7 +440,7 @@ async function saveToDatabase(requestData) {
             logger.debug('📊 Analytics - Mock hits updated successfully');
         }
         
-        // Update daily stats
+        // Update daily stats with overflow protection
         logger.debug('📊 Analytics - Updating daily stats...');
         await storage.updateDailyStats(requestData);
         logger.debug('📊 Analytics - Daily stats updated successfully');
@@ -444,6 +451,21 @@ async function saveToDatabase(requestData) {
             code: error.code,
             stack: error.stack
         });
+        
+        // Handle specific overflow errors
+        if (error.message && error.message.includes('numeric field overflow')) {
+            logger.warn('📊 Analytics - Numeric overflow detected, attempting cleanup...');
+            
+            // Try to clean up old data automatically
+            try {
+                if (storage.cleanupAnalytics) {
+                    await storage.cleanupAnalytics(30); // Keep only last 30 days
+                    logger.info('📊 Analytics - Automatic cleanup completed due to overflow');
+                }
+            } catch (cleanupError) {
+                logger.error('📊 Analytics - Failed to cleanup after overflow:', cleanupError.message);
+            }
+        }
     }
 }
 

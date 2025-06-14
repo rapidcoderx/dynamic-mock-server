@@ -107,9 +107,9 @@ class PostgresStorage {
                 CREATE TABLE IF NOT EXISTS daily_stats (
                     id SERIAL PRIMARY KEY,
                     date DATE NOT NULL,
-                    total_requests INTEGER DEFAULT 0,
-                    mock_hits INTEGER DEFAULT 0,
-                    not_found_requests INTEGER DEFAULT 0,
+                    total_requests BIGINT DEFAULT 0,
+                    mock_hits BIGINT DEFAULT 0,
+                    not_found_requests BIGINT DEFAULT 0,
                     average_response_time DECIMAL(10,2) DEFAULT 0,
                     response_times_sum BIGINT DEFAULT 0,
                     status_codes JSONB DEFAULT '{}',
@@ -120,7 +120,42 @@ class PostgresStorage {
                     UNIQUE(date)
                 );
             `);
+            
+            // Migrate existing table to use BIGINT if it exists with INTEGER columns
+            await client.query(`
+                DO $$ 
+                BEGIN
+                    -- Check if columns are INTEGER and alter to BIGINT
+                    IF EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_name = 'daily_stats' 
+                        AND column_name = 'total_requests' 
+                        AND data_type = 'integer'
+                    ) THEN
+                        ALTER TABLE daily_stats ALTER COLUMN total_requests TYPE BIGINT;
+                        ALTER TABLE daily_stats ALTER COLUMN mock_hits TYPE BIGINT;
+                        ALTER TABLE daily_stats ALTER COLUMN not_found_requests TYPE BIGINT;
+                    END IF;
+                END $$;
+            `);
             logger.debug('🐘 daily_stats table created');
+
+            // Create archived daily stats table for long-term storage
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS archived_daily_stats (
+                    id SERIAL PRIMARY KEY,
+                    year INTEGER NOT NULL,
+                    month INTEGER NOT NULL,
+                    total_requests BIGINT DEFAULT 0,
+                    mock_hits BIGINT DEFAULT 0,
+                    not_found_requests BIGINT DEFAULT 0,
+                    average_response_time DECIMAL(10,2) DEFAULT 0,
+                    status_codes JSONB DEFAULT '{}',
+                    archived_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(year, month)
+                );
+            `);
+            logger.debug('🐘 archived_daily_stats table created');
 
             // Create indexes for analytics performance
             await client.query(`
@@ -451,6 +486,10 @@ class PostgresStorage {
         const dateKey = requestData.timestamp.toISOString().split('T')[0]; // YYYY-MM-DD
         
         try {
+            // Validate input data to prevent overflow
+            const responseTime = Math.max(0, Math.min(requestData.responseTime || 0, 999999)); // Cap at reasonable max
+            const statusCode = requestData.statusCode || 0;
+            
             // Get existing daily stats
             const existingStats = await this.pool.query(`
                 SELECT * FROM daily_stats WHERE date = $1
@@ -466,33 +505,78 @@ class PostgresStorage {
                 `, [
                     dateKey,
                     requestData.mockMatched ? 1 : 0,
-                    requestData.statusCode === 404 && !requestData.mockMatched ? 1 : 0,
-                    requestData.responseTime || 0,
-                    JSON.stringify({ [requestData.statusCode]: 1 }),
+                    statusCode === 404 && !requestData.mockMatched ? 1 : 0,
+                    responseTime,
+                    JSON.stringify({ [statusCode]: 1 }),
                     JSON.stringify({ [requestData.path]: 1 }),
                     requestData.mockMatched ? JSON.stringify({ [requestData.mockMatched.id]: 1 }) : '{}'
                 ]);
             } else {
-                // Update existing stats
+                // Update existing stats with overflow protection
                 const stats = existingStats.rows[0];
-                const newTotalRequests = stats.total_requests + 1;
-                const newMockHits = stats.mock_hits + (requestData.mockMatched ? 1 : 0);
-                const newNotFoundRequests = stats.not_found_requests + (requestData.statusCode === 404 && !requestData.mockMatched ? 1 : 0);
-                const newResponseTimesSum = stats.response_times_sum + (requestData.responseTime || 0);
-                const newAverageResponseTime = newResponseTimesSum / newTotalRequests;
+                
+                // Ensure we don't overflow BIGINT (9,223,372,036,854,775,807)
+                const maxSafeBigInt = 9000000000000000000n; // Leave some headroom
+                
+                const currentTotalRequests = BigInt(stats.total_requests || 0);
+                const currentMockHits = BigInt(stats.mock_hits || 0);
+                const currentNotFoundRequests = BigInt(stats.not_found_requests || 0);
+                const currentResponseTimesSum = BigInt(stats.response_times_sum || 0);
+                
+                // Check for potential overflow before performing operations
+                if (currentTotalRequests >= maxSafeBigInt) {
+                    logger.warn(`📊 Analytics - Daily stats total_requests approaching BIGINT limit for ${dateKey}, skipping update`);
+                    return;
+                }
+                
+                const newTotalRequests = currentTotalRequests + 1n;
+                const newMockHits = currentMockHits + BigInt(requestData.mockMatched ? 1 : 0);
+                const newNotFoundRequests = currentNotFoundRequests + BigInt(statusCode === 404 && !requestData.mockMatched ? 1 : 0);
+                const newResponseTimesSum = currentResponseTimesSum + BigInt(responseTime);
+                const newAverageResponseTime = Number(newResponseTimesSum) / Number(newTotalRequests);
 
-                // Update status codes
+                // Update status codes (with size limit protection)
                 const statusCodes = stats.status_codes || {};
-                statusCodes[requestData.statusCode] = (statusCodes[requestData.statusCode] || 0) + 1;
+                statusCodes[statusCode] = (statusCodes[statusCode] || 0) + 1;
+                
+                // Limit status codes object size to prevent memory issues
+                const statusCodesEntries = Object.entries(statusCodes);
+                if (statusCodesEntries.length > 100) {
+                    // Keep only top 50 most frequent status codes
+                    const sortedStatusCodes = statusCodesEntries
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 50);
+                    statusCodes = Object.fromEntries(sortedStatusCodes);
+                }
 
-                // Update top paths
+                // Update top paths (with size limit protection)
                 const topPaths = stats.top_paths || {};
                 topPaths[requestData.path] = (topPaths[requestData.path] || 0) + 1;
+                
+                // Limit paths object size
+                const pathsEntries = Object.entries(topPaths);
+                if (pathsEntries.length > 200) {
+                    // Keep only top 100 most frequent paths
+                    const sortedPaths = pathsEntries
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 100);
+                    topPaths = Object.fromEntries(sortedPaths);
+                }
 
-                // Update top mocks
+                // Update top mocks (with size limit protection)
                 const topMocks = stats.top_mocks || {};
                 if (requestData.mockMatched) {
                     topMocks[requestData.mockMatched.id] = (topMocks[requestData.mockMatched.id] || 0) + 1;
+                }
+                
+                // Limit mocks object size
+                const mocksEntries = Object.entries(topMocks);
+                if (mocksEntries.length > 200) {
+                    // Keep only top 100 most frequent mocks
+                    const sortedMocks = mocksEntries
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 100);
+                    topMocks = Object.fromEntries(sortedMocks);
                 }
 
                 await this.pool.query(`
@@ -509,11 +593,11 @@ class PostgresStorage {
                     WHERE date = $1
                 `, [
                     dateKey,
-                    newTotalRequests,
-                    newMockHits,
-                    newNotFoundRequests,
+                    newTotalRequests.toString(),
+                    newMockHits.toString(),
+                    newNotFoundRequests.toString(),
                     newAverageResponseTime,
-                    newResponseTimesSum,
+                    newResponseTimesSum.toString(),
                     JSON.stringify(statusCodes),
                     JSON.stringify(topPaths),
                     JSON.stringify(topMocks)
@@ -521,7 +605,11 @@ class PostgresStorage {
             }
 
         } catch (err) {
-            logger.error('❌ Failed to update daily stats in PostgreSQL:', err.message);
+            logger.error('❌ Failed to update daily stats in PostgreSQL:', {
+                message: err.message,
+                code: err.code,
+                detail: err.detail
+            });
             throw err;
         }
     }
@@ -534,20 +622,31 @@ class PostgresStorage {
             const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
             const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-            // Get total counts
-            const totalRequests = await this.pool.query(`
-                SELECT COUNT(*) as count FROM request_history
+            // Get total counts and mock matches from the same source
+            const requestStats = await this.pool.query(`
+                SELECT 
+                    COUNT(*) as total_count,
+                    COUNT(CASE WHEN mock_id IS NOT NULL THEN 1 END) as mock_matched_count
+                FROM request_history
             `);
 
-            const recentRequests = await this.pool.query(`
-                SELECT COUNT(*) as count FROM request_history WHERE timestamp >= $1
+            const recentStats = await this.pool.query(`
+                SELECT 
+                    COUNT(*) as total_count,
+                    COUNT(CASE WHEN mock_id IS NOT NULL THEN 1 END) as mock_matched_count
+                FROM request_history 
+                WHERE timestamp >= $1
             `, [last24Hours]);
 
-            const weeklyRequests = await this.pool.query(`
-                SELECT COUNT(*) as count FROM request_history WHERE timestamp >= $1
+            const weeklyStats = await this.pool.query(`
+                SELECT 
+                    COUNT(*) as total_count,
+                    COUNT(CASE WHEN mock_id IS NOT NULL THEN 1 END) as mock_matched_count
+                FROM request_history 
+                WHERE timestamp >= $1
             `, [last7Days]);
 
-            // Get mock hits
+            // Get mock hits - used only for unique mocks count and top mocks list
             const mockHits = await this.pool.query(`
                 SELECT SUM(hit_count) as total_hits, COUNT(*) as unique_mocks FROM mock_hits
             `);
@@ -600,11 +699,13 @@ class PostgresStorage {
 
             return {
                 summary: {
-                    totalRequests: parseInt(totalRequests.rows[0].count) || 0,
-                    totalMockHits: parseInt(mockHits.rows[0].total_hits) || 0,
+                    totalRequests: parseInt(requestStats.rows[0].total_count) || 0,
+                    totalMockHits: parseInt(requestStats.rows[0].mock_matched_count) || 0,
                     uniqueMocksHit: parseInt(mockHits.rows[0].unique_mocks) || 0,
-                    recentRequests24h: parseInt(recentRequests.rows[0].count) || 0,
-                    weeklyRequests: parseInt(weeklyRequests.rows[0].count) || 0
+                    recentRequests24h: parseInt(recentStats.rows[0].total_count) || 0,
+                    recentMockHits24h: parseInt(recentStats.rows[0].mock_matched_count) || 0,
+                    weeklyRequests: parseInt(weeklyStats.rows[0].total_count) || 0,
+                    weeklyMockHits: parseInt(weeklyStats.rows[0].mock_matched_count) || 0
                 },
                 performance: {
                     averageResponseTime: Math.round(parseFloat(responseTimeStats.rows[0].avg_response_time) || 0),
@@ -758,6 +859,136 @@ class PostgresStorage {
 
         } catch (err) {
             logger.error('❌ Failed to clear analytics data from PostgreSQL:', err.message);
+            throw err;
+        }
+    }
+
+    /**
+     * Clean up old analytics data to prevent database overflow
+     */
+    async cleanupAnalytics(daysToKeep = 90) {
+        await this.initialize();
+        
+        try {
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+            const cutoffString = cutoffDate.toISOString().split('T')[0];
+            
+            logger.info(`📊 Analytics cleanup - Removing analytics data older than ${cutoffString}`);
+            
+            // Remove old request history
+            const requestHistoryResult = await this.pool.query(`
+                DELETE FROM request_history WHERE timestamp < $1
+            `, [cutoffDate]);
+            
+            // Remove old daily stats
+            const dailyStatsResult = await this.pool.query(`
+                DELETE FROM daily_stats WHERE date < $1
+            `, [cutoffString]);
+            
+            logger.info(`📊 Analytics cleanup completed:`, {
+                requestHistoryDeleted: requestHistoryResult.rowCount,
+                dailyStatsDeleted: dailyStatsResult.rowCount,
+                cutoffDate: cutoffString
+            });
+            
+        } catch (err) {
+            logger.error('❌ Failed to cleanup analytics in PostgreSQL:', {
+                message: err.message,
+                code: err.code
+            });
+            throw err;
+        }
+    }
+
+    /**
+     * Archive old analytics data to prevent overflow while keeping summaries
+     */
+    async archiveOldAnalytics(daysToKeep = 365) {
+        await this.initialize();
+        
+        try {
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+            const cutoffString = cutoffDate.toISOString().split('T')[0];
+            
+            logger.info(`📊 Analytics archival - Archiving detailed data older than ${cutoffString}`);
+            
+            // Create archived daily stats with aggregated data
+            await this.pool.query(`
+                INSERT INTO archived_daily_stats (
+                    year, month, total_requests, mock_hits, not_found_requests,
+                    average_response_time, status_codes, archived_at
+                )
+                SELECT 
+                    EXTRACT(YEAR FROM date) as year,
+                    EXTRACT(MONTH FROM date) as month,
+                    SUM(total_requests) as total_requests,
+                    SUM(mock_hits) as mock_hits,
+                    SUM(not_found_requests) as not_found_requests,
+                    AVG(average_response_time) as average_response_time,
+                    '{}' as status_codes,
+                    CURRENT_TIMESTAMP as archived_at
+                FROM daily_stats 
+                WHERE date < $1
+                GROUP BY EXTRACT(YEAR FROM date), EXTRACT(MONTH FROM date)
+                ON CONFLICT (year, month) DO UPDATE SET
+                    total_requests = EXCLUDED.total_requests,
+                    mock_hits = EXCLUDED.mock_hits,
+                    not_found_requests = EXCLUDED.not_found_requests,
+                    average_response_time = EXCLUDED.average_response_time,
+                    archived_at = EXCLUDED.archived_at
+            `, [cutoffString]);
+            
+            // Remove old detailed request history (keep only recent detailed data)
+            const requestHistoryResult = await this.pool.query(`
+                DELETE FROM request_history WHERE timestamp < $1
+            `, [cutoffDate]);
+            
+            logger.info(`📊 Analytics archival completed:`, {
+                requestHistoryArchived: requestHistoryResult.rowCount,
+                cutoffDate: cutoffString
+            });
+            
+        } catch (err) {
+            logger.error('❌ Failed to archive analytics in PostgreSQL:', {
+                message: err.message,
+                code: err.code
+            });
+            // Don't throw on archival errors, just log them
+        }
+    }
+
+    /**
+     * Reset overflowed daily stats for a specific date
+     */
+    async resetDailyStatsForDate(dateString) {
+        await this.initialize();
+        
+        try {
+            logger.info(`📊 Analytics - Resetting daily stats for ${dateString} due to overflow`);
+            
+            await this.pool.query(`
+                UPDATE daily_stats SET
+                    total_requests = 0,
+                    mock_hits = 0,
+                    not_found_requests = 0,
+                    average_response_time = 0,
+                    response_times_sum = 0,
+                    status_codes = '{}',
+                    top_paths = '{}',
+                    top_mocks = '{}',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE date = $1
+            `, [dateString]);
+            
+            logger.info(`📊 Analytics - Daily stats reset completed for ${dateString}`);
+            
+        } catch (err) {
+            logger.error('❌ Failed to reset daily stats in PostgreSQL:', {
+                message: err.message,
+                code: err.code
+            });
             throw err;
         }
     }

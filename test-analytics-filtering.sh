@@ -50,6 +50,11 @@ test_tracking "/" "Root Page"
 test_tracking "/favicon.ico" "Favicon"
 test_tracking "/.well-known/appspecific/com.chrome.devtools.json" "Chrome DevTools"
 
+echo "=== Testing Documentation & Swagger UI Paths (should NOT be tracked) ==="
+test_tracking "/api/docs" "API Documentation"
+test_tracking "/api/docs/swagger-ui-init.js" "Swagger UI Script"
+test_tracking "/api/health" "Health Check Endpoint"
+
 echo "=== Testing Mock API Calls (SHOULD be tracked) ==="
 # Test mock endpoints (should BE tracked)
 test_tracking "/api/mocks" "Mock Management API (should be tracked)"
