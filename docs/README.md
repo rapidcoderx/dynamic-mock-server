@@ -20,11 +20,18 @@ This folder contains comprehensive documentation for the Dynamic Mock Server.
 - **[HEADER_ROUTING.md](./HEADER_ROUTING.md)** - Header-based request routing
 - **[QUERY_PARAMETER_ROUTING.md](./QUERY_PARAMETER_ROUTING.md)** - Query parameter-based routing
 
-## 📚 Additional Resources
+## � Monitoring & Observability
+
+- **[OPENTELEMETRY_METRICS.md](./OPENTELEMETRY_METRICS.md)** - OpenTelemetry and Prometheus metrics implementation
+- **[TESTING_OTEL_PROMETHEUS.md](./TESTING_OTEL_PROMETHEUS.md)** - Testing guide for metrics implementation
+- **[OTEL_PROMETHEUS_IMPLEMENTATION.md](./OTEL_PROMETHEUS_IMPLEMENTATION.md)** - Implementation summary
+- **[JAEGER_TO_OTLP_MIGRATION.md](./JAEGER_TO_OTLP_MIGRATION.md)** - Migration guide from Jaeger to OTLP
+
+## �📚 Additional Resources
 
 - **[../README.md](../README.md)** - Main project documentation
 - **[../api-collections/README.md](../api-collections/README.md)** - API collection examples
-- **[../examples/EXPORT_IMPORT_GUIDE.md](../examples/EXPORT_IMPORT_GUIDE.md)** - Mock import/export guide
+- **[EXPORT_IMPORT_GUIDE.md](EXPORT_IMPORT_GUIDE.md)** - Mock import/export guide
 
 ## 🚀 Quick Start Guide
 

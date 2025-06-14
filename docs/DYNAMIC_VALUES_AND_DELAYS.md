@@ -629,7 +629,7 @@ Check out these example files in the `/examples` directory:
 
 - `dynamic-values-examples.json` - Complete dynamic mock collection
 - `sample-import.json` - Basic import examples
-- `EXPORT_IMPORT_GUIDE.md` - Import/export documentation
+- `docs/EXPORT_IMPORT_GUIDE.md` - Import/export documentation
 
 ---
 

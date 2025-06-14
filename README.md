@@ -157,8 +157,13 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   ├── query-parameter-examples.json # Query parameter matching examples
   └── dynamic-values-examples.json  # Dynamic values and delay examples
 
+/sql
+  └── emergency-analytics-cleanup.sql # Emergency analytics cleanup SQL script
+
+/scripts
+  └── setup-database.sh       # Interactive database setup script
+
 /.env.example                 # Environment configuration template
-/setup-database.sh           # Interactive database setup script
 ```
 
 ---
@@ -280,9 +285,10 @@ See **[📡 API Collections](api-collections/)** for complete documentation.
 npm run dev                  # Start with nodemon (auto-restart)
 npm start                    # Production start
 
-# Database Setup
+# Setup & Validation
 npm run setup-db             # Interactive database setup script
-./setup-database.sh          # Direct script execution
+npm run validate              # Validate server configuration and setup
+./scripts/setup-database.sh  # Direct script execution
 
 # CSS Build
 npm run build-css            # CSS Development (watch mode)

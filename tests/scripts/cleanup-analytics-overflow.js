@@ -143,7 +143,7 @@ async function tryPostgresCleanup() {
 }
 
 async function executeEmergencySql() {
-    console.log('🔧 Attempting direct SQL execution of emergency-analytics-cleanup.sql...');
+    console.log('🔧 Attempting direct SQL execution of sql/emergency-analytics-cleanup.sql...');
     
     const fs = require('fs');
     const path = require('path');
@@ -153,7 +153,7 @@ async function executeEmergencySql() {
     
     try {
         // Check if SQL file exists
-        const sqlFilePath = path.join(__dirname, 'emergency-analytics-cleanup.sql');
+        const sqlFilePath = path.join(__dirname, '../../sql/emergency-analytics-cleanup.sql');
         if (!fs.existsSync(sqlFilePath)) {
             console.error('❌ SQL file not found:', sqlFilePath);
             return false;
@@ -189,7 +189,7 @@ async function executeEmergencySql() {
     } catch (error) {
         console.error('❌ SQL execution failed:', error.message);
         console.log('💡 You might need to run SQL commands manually:');
-        console.log('   psql -U your_user -d your_db -f emergency-analytics-cleanup.sql');
+        console.log('   psql -U your_user -d your_db -f sql/emergency-analytics-cleanup.sql');
         return false;
     }
 }
@@ -211,7 +211,7 @@ async function emergencyCleanup() {
             console.log('⚠️  No PostgreSQL configuration found');
             console.log('💡 If you\'re getting overflow errors, you might need to:');
             console.log('   1. Set up PostgreSQL environment variables, or');
-            console.log('   2. Use the emergency-analytics-cleanup.sql file to run SQL commands directly');
+            console.log('   2. Use the sql/emergency-analytics-cleanup.sql file to run SQL commands directly');
             console.log('   3. Switch to file-based storage by removing STORAGE_TYPE env var');
             
             // Try direct SQL execution as a last resort
@@ -258,7 +258,7 @@ async function emergencyCleanup() {
         console.log('1. Make sure PostgreSQL is running and accessible');
         console.log('2. Check your database connection environment variables:');
         console.log('   - DATABASE_URL or POSTGRES_HOST, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB');
-        console.log('3. Try running the SQL commands manually using emergency-analytics-cleanup.sql');
+        console.log('3. Try running the SQL commands manually using sql/emergency-analytics-cleanup.sql');
         console.log('4. Consider switching to file storage: unset STORAGE_TYPE and USE_DB');
         
         // As a last resort, try direct SQL execution

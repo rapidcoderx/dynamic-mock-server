@@ -1,4 +1,13 @@
+// Initialize OpenTelemetry before any other imports (if enabled)
 require('dotenv').config();
+let otelSDK = null;
+let shutdownTracing = null;
+if (process.env.ENABLE_OTEL === 'true') {
+    const { initializeTracing, shutdownTracing: shutdown } = require('./tracer');
+    otelSDK = initializeTracing();
+    shutdownTracing = shutdown;
+}
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -7,6 +16,14 @@ const logger = require('./logger');
 const { router: mockRoutes, mockStore } = require('./routes/mockRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const { trackRequest } = require('./middleware/analytics');
+let metricsRoutes, metricsMiddleware, trackMockConfigChange, trackMockError;
+if (process.env.ENABLE_OTEL === 'true') {
+    metricsRoutes = require('./routes/metricsRoutes');
+    const metrics = require('./middleware/metrics');
+    metricsMiddleware = metrics.metricsMiddleware;
+    trackMockConfigChange = metrics.trackMockConfigChange;
+    trackMockError = metrics.trackMockError;
+}
 const { findMock } = require('../utils/matcher');
 const { loadMocks, closeStorage, getStorageInfo } = require('../utils/storageStrategy');
 const dynamicResponse = require('../utils/dynamicResponse');
@@ -34,6 +51,11 @@ async function startServer() {
     app.use(cors());
     applySecurity(app);
     
+    // Add metrics collection middleware (before analytics) - only if OpenTelemetry is enabled
+    if (process.env.ENABLE_OTEL === 'true') {
+        app.use(metricsMiddleware);
+    }
+    
     // Add analytics tracking middleware
     app.use(trackRequest);
 
@@ -44,6 +66,11 @@ async function startServer() {
         
         const storageInfo = getStorageInfo();
         logger.info(`📦 Loaded ${mocks.length} mocks using ${storageInfo.type} storage`);
+        
+        // Update metrics with initial mock count (if OpenTelemetry is enabled)
+        if (trackMockConfigChange) {
+            trackMockConfigChange(mockStore);
+        }
     } catch (err) {
         logger.error('❌ Failed to load mocks:', err.message);
         logger.warn('⚠️ Starting with empty mock store');
@@ -85,6 +112,11 @@ async function startServer() {
 
     app.use(`${API_PREFIX}/mocks`, mockRoutes);
     app.use(`${API_PREFIX}/analytics`, analyticsRoutes);
+    
+    // Only register metrics routes if OpenTelemetry is enabled
+    if (metricsRoutes) {
+        app.use(`${API_PREFIX}/metrics`, metricsRoutes);
+    }
 
     /**
      * @swagger
@@ -132,6 +164,7 @@ app.use(async (req, res, next) => {
         `${API_PREFIX}/config`,
         `${API_PREFIX}/mocks`,
         `${API_PREFIX}/analytics`,
+        `${API_PREFIX}/metrics`,
         `${API_PREFIX}/docs`,
         `${API_PREFIX}/swagger`,
     ];
@@ -184,6 +217,12 @@ app.use(async (req, res, next) => {
             return res.status(mock.statusCode || 200).json(processedResponse);
         } catch (error) {
             logger.error(`❌ Error processing dynamic response: ${error.message}`);
+            
+            // Track the error in metrics (if OpenTelemetry is enabled)
+            if (trackMockError) {
+                trackMockError(mock.id, 'dynamic_response_error', error);
+            }
+            
             // Fallback to static response
             return res.status(mock.statusCode || 200).json(mock.response);
         }
@@ -243,6 +282,15 @@ app.use((req, res, next) => {
                 logger.info('💾 Storage connections closed');
             } catch (err) {
                 logger.error('❌ Error closing storage:', err.message);
+            }
+            
+            try {
+                if (otelSDK && shutdownTracing) {
+                    await shutdownTracing(otelSDK);
+                    logger.info('🔍 OpenTelemetry shutdown completed');
+                }
+            } catch (err) {
+                logger.error('❌ Error shutting down OpenTelemetry:', err.message);
             }
             
             logger.info('✅ Graceful shutdown completed');

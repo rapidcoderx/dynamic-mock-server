@@ -5,6 +5,16 @@ const { saveMocks } = require('../../utils/storageStrategy');
 const { isUniqueMock, findMock } = require('../../utils/matcher');
 const dynamicResponse = require('../../utils/dynamicResponse');
 
+// Conditionally import metrics tracking
+let trackMockConfigChange = null;
+try {
+    if (process.env.ENABLE_OTEL === 'true') {
+        trackMockConfigChange = require('../middleware/metrics').trackMockConfigChange;
+    }
+} catch (err) {
+    // Metrics not available, continue without tracking
+}
+
 const router = express.Router();
 const mockStore = []; // In-memory store (can later be persisted or DB-backed)
 
@@ -207,6 +217,11 @@ router.post('/', (req, res) => {
 
         mockStore.push(newMock);
         saveMocks(mockStore);
+        
+        // Update metrics with new mock count (if enabled)
+        if (trackMockConfigChange) {
+            trackMockConfigChange(mockStore);
+        }
 
         const headerInfo = Object.keys(newMock.headers).length > 0 
             ? ` with headers: ${JSON.stringify(newMock.headers)}`
@@ -268,6 +283,11 @@ router.delete('/:id', (req, res) => {
     
     const deletedMock = mockStore.splice(index, 1)[0];
     saveMocks(mockStore);
+    
+    // Update metrics with new mock count (if enabled)
+    if (trackMockConfigChange) {
+        trackMockConfigChange(mockStore);
+    }
     
     logger.info(`🗑️ Deleted mock "${deletedMock.name}" [${deletedMock.method}] ${deletedMock.path}`);
     res.json({ message: 'Mock deleted successfully', deletedMock });
@@ -595,6 +615,11 @@ router.put('/:id', (req, res) => {
         const oldMock = mockStore[mockIndex];
         mockStore[mockIndex] = updatedMock;
         saveMocks(mockStore);
+        
+        // Update metrics (count stays the same but configuration changed) (if enabled)
+        if (trackMockConfigChange) {
+            trackMockConfigChange(mockStore);
+        }
 
         const headerInfo = Object.keys(updatedMock.headers).length > 0 
             ? ` with headers: ${JSON.stringify(updatedMock.headers)}`
@@ -774,6 +799,11 @@ router.post('/import', (req, res) => {
         });
         
         saveMocks(mockStore);
+        
+        // Update metrics with new mock count (if enabled)
+        if (trackMockConfigChange) {
+            trackMockConfigChange(mockStore);
+        }
         
         logger.info(`📥 Imported ${importedMocks.length} mocks, ${duplicatesSkipped} duplicates skipped, ${errors.length} errors`);
         
