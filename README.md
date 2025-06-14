@@ -15,6 +15,7 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 **🎲 Dynamic & Intelligent**: 60+ Faker.js placeholders with realistic response delays  
 **🔍 Advanced Matching**: Query parameter and header-based routing with 7 match types  
 **�️ Multi-Storage Support**: File, PostgreSQL, and MongoDB backends with automatic migration  
+**📊 Analytics Dashboard**: Comprehensive usage tracking, request history, and performance metrics  
 **�🔄 Integration-Friendly**: Export to JSON, Postman collections, and HTTPie commands  
 **📡 API Collections**: Ready-to-use Postman, HTTPie Desktop, and CLI collections  
 **🎨 Modern UX**: Liquid glass UI with keyboard shortcuts and smart notifications  
@@ -66,6 +67,16 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   - Smart notification system with contextual feedback
   - Responsive liquid glass theme using Tailwind CSS v4
   - Keyboard shortcuts and intuitive navigation
+- 📊 **Analytics Dashboard & Insights**:
+  - **Usage Dashboard**: Visual display of mock hit statistics and trends
+  - **Request History**: Complete log of API requests with filtering capabilities
+  - **Performance Metrics**: Response time tracking and distribution analysis
+  - **Mock Hit Statistics**: Track which mocks are used most frequently
+  - **Status Code Analysis**: Monitor success/error rates across all requests
+  - **Daily Trends**: Historical view of usage patterns over time
+  - **Data Export**: Download analytics data in various formats
+  - **Persistent Storage**: PostgreSQL integration for long-term analytics data
+  - **Smart Filtering**: Exclude UI and system calls for clean analytics data
 - 🔌 **Dynamic Configuration & Health**: 
   - Config-driven `apiPrefix` support
   - Health checks with storage backend status
@@ -88,22 +99,27 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   ├── logger.js               # Centralized logging system
   ├── security.js             # Security middleware
   ├── tracer.js               # Request tracing utilities
+  ├── swagger.js              # API documentation generation
+  ├── middleware/             
+  │   └── analytics.js        # Analytics tracking and reporting middleware
   └── routes/
-      └── mockRoutes.js       # Complete mock CRUD operations & export/import
+      ├── mockRoutes.js       # Mock CRUD operations & export/import
+      └── analyticsRoutes.js  # Analytics API endpoints and dashboard data
 
 /tests
   └── scripts/                # Test scripts and utilities
       ├── test-*.js           # JavaScript test files
       ├── test-*.sh           # Bash test scripts
-      ├── cleanup-*.js        # Cleanup utilities
-      └── cleanup-*.sh        # Cleanup shell scripts
+      ├── cleanup-*.js        # Analytics cleanup utilities
+      └── cleanup-*.sh        # Database maintenance shell scripts
 
 /utils
   ├── matcher.js              # Advanced mock matching logic
   ├── storage.js              # File-based storage implementation
   ├── storageStrategy.js      # Storage backend selector & initialization
-  ├── postgresStorage.js      # PostgreSQL storage backend
-  └── mongoStorage.js         # MongoDB storage backend
+  ├── postgresStorage.js      # PostgreSQL storage backend with analytics tables
+  ├── mongoStorage.js         # MongoDB storage backend
+  └── dynamicResponse.js      # Dynamic value processing engine
 
 /public
   ├── index.html              # Modern liquid glass frontend
@@ -118,11 +134,16 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   └── mock-config.json        # Persistent mock storage (file mode)
 
 /docs
-  ├── HEADER_ROUTING.md       # Documentation for header-based routing
-  ├── QUERY_PARAMETER_ROUTING.md # Documentation for query parameter matching
-  ├── DYNAMIC_VALUES_AND_DELAYS.md  # Complete guide to dynamic values and delays
+  ├── README.md               # Main documentation
+  ├── HEADER_ROUTING.md       # Header-based routing docs
+  ├── QUERY_PARAMETER_ROUTING.md # Query param routing docs
+  ├── DYNAMIC_VALUES_AND_DELAYS.md # Dynamic mocks guide
   ├── DYNAMIC_VALUES_CHEAT_SHEET.md # Quick reference for placeholders and delays
-  └── DATABASE_STORAGE.md     # Database storage setup & configuration guide
+  ├── DATABASE_STORAGE.md     # Database storage setup & configuration guide
+  ├── ANALYTICS_IMPLEMENTATION.md # Analytics dashboard implementation details
+  ├── ANALYTICS_FILTERING.md  # Analytics request filtering documentation
+  ├── ANALYTICS_CLEANUP.md    # Analytics database cleanup utilities
+  └── POSTGRESQL_ANALYTICS_SOLUTION.md # PostgreSQL analytics integration guide
 
 /api-collections
   ├── README.md               # API collections documentation
@@ -725,10 +746,16 @@ Configure realistic network delays in Advanced Options:
 
 ## 🚀 Next Priority Features
 
-### 📊 **Analytics & Monitoring**
-- [ ] **Usage Dashboard**: Mock hit statistics and analytics
-- [ ] **Request History**: Comprehensive request logging with search/filter
-- [ ] **Performance Metrics**: Response time tracking and performance insights
+### 📊 **Analytics & Monitoring** ✓
+- [x] **Usage Dashboard**: Visual display of mock hit statistics and trends ✓
+- [x] **Request History**: Complete log of API requests with filtering capabilities ✓
+- [x] **Performance Metrics**: Response time tracking and distribution analysis ✓
+- [x] **Mock Hit Statistics**: Track which mocks are used most frequently
+- [x] **Status Code Analysis**: Monitor success/error rates across all requests
+- [x] **Daily Trends**: Historical view of usage patterns over time
+- [ ] **Data Export**: Download analytics data in various formats
+- [ ] **Persistent Storage**: PostgreSQL integration for long-term analytics data
+- [ ] **Smart Filtering**: Exclude UI and system calls for clean analytics data
 - [ ] **Real-time Monitoring**: Live request monitoring with WebSocket updates
 
 ### 🔍 **Advanced Matching**
@@ -750,9 +777,7 @@ Configure realistic network delays in Advanced Options:
 
 ---
 
-## 🔮 Future Enhancements
-
-### 🏢 **Enterprise Features**
+## 🏢 **Enterprise Features**
 - [ ] **Multi-environment**: Dev/staging/prod environment management
 - [ ] **Database Support**: SQLite and PostgreSQL integration
 - [ ] **Authentication**: JWT-based admin panel and mock protection
