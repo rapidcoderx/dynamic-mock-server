@@ -8,12 +8,161 @@ const dynamicResponse = require('../../utils/dynamicResponse');
 const router = express.Router();
 const mockStore = []; // In-memory store (can later be persisted or DB-backed)
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Mocks
+ *     description: Mock management operations
+ *   - name: Analytics
+ *     description: Analytics and monitoring
+ *   - name: System
+ *     description: System health and configuration
+ */
+
+/**
+ * @swagger
+ * /mocks:
+ *   get:
+ *     summary: List all registered mocks
+ *     tags: [Mocks]
+ *     description: Retrieve a list of all registered mock endpoints with their configurations
+ *     responses:
+ *       200:
+ *         description: List of mocks retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Mock'
+ *             example:
+ *               - id: "mock_123"
+ *                 name: "Get User Profile"
+ *                 method: "GET"
+ *                 path: "/users/:id"
+ *                 headers: {"Authorization": "Bearer token"}
+ *                 response: {"id": "{{faker.datatype.number}}", "name": "{{faker.person.fullName}}"}
+ *                 statusCode: 200
+ *                 dynamic: true
+ */
 // GET /mocks - List all mocks
 router.get('/', (req, res) => {
     logger.info(`📦 Returning ${mockStore.length} mocks`);
     res.json(mockStore);
 });
 
+/**
+ * @swagger
+ * /mocks:
+ *   post:
+ *     summary: Register a new mock endpoint
+ *     tags: [Mocks]
+ *     description: Create a new mock endpoint with custom response, headers, and routing rules
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - method
+ *               - path
+ *               - response
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Human-readable name for the mock
+ *                 example: "Get User Profile"
+ *               method:
+ *                 type: string
+ *                 enum: [GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS]
+ *                 description: HTTP method
+ *                 example: "GET"
+ *               path:
+ *                 type: string
+ *                 description: URL path pattern (supports :param syntax)
+ *                 example: "/users/:id"
+ *               headers:
+ *                 type: object
+ *                 description: Required headers for matching (optional)
+ *                 example: {"Authorization": "Bearer token"}
+ *               queryParams:
+ *                 type: array
+ *                 description: Query parameter matching rules (optional)
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     key:
+ *                       type: string
+ *                       example: "status"
+ *                     type:
+ *                       type: string
+ *                       enum: [equals, contains, starts_with, ends_with, regex, exists, not_exists]
+ *                       example: "equals"
+ *                     value:
+ *                       type: string
+ *                       example: "active"
+ *                     required:
+ *                       type: boolean
+ *                       example: true
+ *               response:
+ *                 type: object
+ *                 description: Response body (supports Faker.js placeholders)
+ *                 example: {"id": "{{faker.datatype.number}}", "name": "{{faker.person.fullName}}"}
+ *               statusCode:
+ *                 type: integer
+ *                 description: HTTP status code
+ *                 default: 200
+ *                 example: 200
+ *               delay:
+ *                 oneOf:
+ *                   - type: integer
+ *                     description: Fixed delay in milliseconds
+ *                   - type: object
+ *                     properties:
+ *                       type:
+ *                         type: string
+ *                         enum: [random, network]
+ *                       min:
+ *                         type: integer
+ *                       max:
+ *                         type: integer
+ *                 description: Response delay configuration
+ *               dynamic:
+ *                 type: boolean
+ *                 description: Whether to process Faker.js placeholders
+ *                 default: false
+ *     responses:
+ *       201:
+ *         description: Mock created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Mock registered successfully"
+ *                 mock:
+ *                   $ref: '#/components/schemas/Mock'
+ *       400:
+ *         description: Bad request - missing required fields or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "name, method, path, and response are required"
+ *       409:
+ *         description: Conflict - mock with same method/path/headers already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "A mock with the same method, path, and headers already exists"
+ */
 // POST /mocks - Register a new mock
 router.post('/', (req, res) => {
     try {
@@ -70,6 +219,43 @@ router.post('/', (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /mocks/{id}:
+ *   delete:
+ *     summary: Delete a mock endpoint
+ *     tags: [Mocks]
+ *     description: Remove a mock endpoint by its unique ID
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Unique identifier of the mock to delete
+ *         schema:
+ *           type: string
+ *           example: "mock_123456"
+ *     responses:
+ *       200:
+ *         description: Mock deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Mock deleted successfully"
+ *                 deletedMock:
+ *                   $ref: '#/components/schemas/Mock'
+ *       404:
+ *         description: Mock not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Mock not found"
+ */
 // DELETE /mocks/:id - Delete a mock by ID
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
@@ -87,6 +273,51 @@ router.delete('/:id', (req, res) => {
     res.json({ message: 'Mock deleted successfully', deletedMock });
 });
 
+/**
+ * @swagger
+ * /mocks/analyze:
+ *   get:
+ *     summary: Analyze potential conflicts and duplicates
+ *     tags: [Mocks]
+ *     description: Analyze registered mocks to identify potential conflicts, duplicates, and routing issues
+ *     responses:
+ *       200:
+ *         description: Analysis completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 conflicts:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       path:
+ *                         type: string
+ *                       method:
+ *                         type: string
+ *                       mocks:
+ *                         type: array
+ *                         items:
+ *                           $ref: '#/components/schemas/Mock'
+ *                       severity:
+ *                         type: string
+ *                         enum: [high, medium, low]
+ *                       reason:
+ *                         type: string
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     totalMocks:
+ *                       type: integer
+ *                     conflictCount:
+ *                       type: integer
+ *                     uniquePaths:
+ *                       type: integer
+ *                     methodDistribution:
+ *                       type: object
+ */
 // GET /mocks/analyze - Analyze potential conflicts and duplicates
 router.get('/analyze', (req, res) => {
     const conflicts = [];
@@ -131,6 +362,67 @@ router.get('/analyze', (req, res) => {
     });
 });
 
+/**
+ * @swagger
+ * /mocks/test:
+ *   post:
+ *     summary: Test if a request would match any mock
+ *     tags: [Mocks]
+ *     description: Test whether a given request would match any registered mock without actually invoking it
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - method
+ *               - path
+ *             properties:
+ *               method:
+ *                 type: string
+ *                 enum: [GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS]
+ *                 example: "GET"
+ *               path:
+ *                 type: string
+ *                 example: "/users/123"
+ *               headers:
+ *                 type: object
+ *                 description: Request headers to test against
+ *                 example: {"Authorization": "Bearer token"}
+ *               query:
+ *                 type: object
+ *                 description: Query parameters to test against
+ *                 example: {"status": "active"}
+ *     responses:
+ *       200:
+ *         description: Test completed - check 'matched' field for result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - type: object
+ *                   properties:
+ *                     matched:
+ *                       type: boolean
+ *                       example: true
+ *                     mock:
+ *                       $ref: '#/components/schemas/Mock'
+ *                 - type: object
+ *                   properties:
+ *                     matched:
+ *                       type: boolean
+ *                       example: false
+ *                     error:
+ *                       type: string
+ *                       example: "No mock found"
+ *       400:
+ *         description: Bad request - missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // POST /mocks/test - Test if a request would match any mock
 router.post('/test', (req, res) => {
     const { method, path, headers = {}, query = {} } = req.body;
@@ -166,6 +458,91 @@ router.post('/test', (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /mocks/{id}:
+ *   put:
+ *     summary: Update an existing mock endpoint
+ *     tags: [Mocks]
+ *     description: Update all properties of an existing mock endpoint
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Unique identifier of the mock to update
+ *         schema:
+ *           type: string
+ *           example: "mock_123456"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - method
+ *               - path
+ *               - response
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Human-readable name for the mock
+ *                 example: "Updated User Profile"
+ *               method:
+ *                 type: string
+ *                 enum: [GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS]
+ *                 description: HTTP method
+ *                 example: "GET"
+ *               path:
+ *                 type: string
+ *                 description: URL path pattern
+ *                 example: "/users/:id"
+ *               headers:
+ *                 type: object
+ *                 description: Required headers for matching
+ *                 example: {"Authorization": "Bearer token"}
+ *               queryParams:
+ *                 type: array
+ *                 description: Query parameter matching rules
+ *               response:
+ *                 type: object
+ *                 description: Response body
+ *               statusCode:
+ *                 type: integer
+ *                 description: HTTP status code
+ *                 default: 200
+ *               delay:
+ *                 description: Response delay configuration
+ *               dynamic:
+ *                 type: boolean
+ *                 description: Whether to process Faker.js placeholders
+ *     responses:
+ *       200:
+ *         description: Mock updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Mock updated successfully"
+ *                 mock:
+ *                   $ref: '#/components/schemas/Mock'
+ *       404:
+ *         description: Mock not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       400:
+ *         description: Bad request - missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // PUT /mocks/:id - Update an existing mock
 router.put('/:id', (req, res) => {
     try {
@@ -230,6 +607,35 @@ router.put('/:id', (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /mocks/export:
+ *   get:
+ *     summary: Export all mocks as JSON
+ *     tags: [Mocks]
+ *     description: Export all registered mocks in a portable JSON format for backup or sharing
+ *     responses:
+ *       200:
+ *         description: Mocks exported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 version:
+ *                   type: string
+ *                   example: "1.0.0"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                 totalMocks:
+ *                   type: integer
+ *                   example: 25
+ *                 mocks:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Mock'
+ */
 // GET /mocks/export - Export all mocks as JSON
 router.get('/export', (req, res) => {
     const exportData = {
@@ -247,6 +653,68 @@ router.get('/export', (req, res) => {
     res.json(exportData);
 });
 
+/**
+ * @swagger
+ * /mocks/import:
+ *   post:
+ *     summary: Import mocks from JSON
+ *     tags: [Mocks]
+ *     description: Import multiple mocks from a JSON payload, with options to replace existing mocks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - mocks
+ *             properties:
+ *               mocks:
+ *                 type: array
+ *                 description: Array of mock objects to import
+ *                 items:
+ *                   $ref: '#/components/schemas/Mock'
+ *               replaceExisting:
+ *                 type: boolean
+ *                 description: Whether to replace existing mocks with the same method/path/headers
+ *                 default: false
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: Import completed (may include partial success)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Import completed"
+ *                 imported:
+ *                   type: integer
+ *                   description: Number of mocks successfully imported
+ *                   example: 15
+ *                 duplicatesSkipped:
+ *                   type: integer
+ *                   description: Number of duplicates skipped
+ *                   example: 2
+ *                 errors:
+ *                   type: array
+ *                   description: List of validation errors encountered
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       index:
+ *                         type: integer
+ *                       error:
+ *                         type: string
+ *       400:
+ *         description: Bad request - invalid import data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // POST /mocks/import - Import mocks from JSON
 router.post('/import', (req, res) => {
     try {
@@ -324,6 +792,46 @@ router.post('/import', (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /mocks/export/postman:
+ *   get:
+ *     summary: Generate Postman collection
+ *     tags: [Mocks]
+ *     description: Generate a Postman collection file from all registered mocks for easy testing
+ *     parameters:
+ *       - name: baseUrl
+ *         in: query
+ *         description: Base URL for the generated requests
+ *         schema:
+ *           type: string
+ *           default: 'http://localhost:8080'
+ *           example: 'https://my-mock-server.com'
+ *     responses:
+ *       200:
+ *         description: Postman collection generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               description: Postman Collection v2.1 format
+ *               properties:
+ *                 info:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       example: "Dynamic Mock Server Collection"
+ *                     description:
+ *                       type: string
+ *                     version:
+ *                       type: string
+ *                     schema:
+ *                       type: string
+ *                 item:
+ *                   type: array
+ *                   description: Collection requests
+ */
 // GET /mocks/export/postman - Generate Postman collection
 router.get('/export/postman', (req, res) => {
     try {
@@ -416,6 +924,36 @@ router.get('/export/postman', (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /mocks/export/httpie:
+ *   get:
+ *     summary: Generate HTTPie commands
+ *     tags: [Mocks]
+ *     description: Generate HTTPie command line scripts to test all registered mocks
+ *     parameters:
+ *       - name: baseUrl
+ *         in: query
+ *         description: Base URL for the generated commands
+ *         schema:
+ *           type: string
+ *           default: 'http://localhost:8080'
+ *           example: 'https://my-mock-server.com'
+ *     responses:
+ *       200:
+ *         description: HTTPie commands generated successfully
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               description: Shell script with HTTPie commands
+ *               example: |
+ *                 #!/bin/bash
+ *                 # HTTPie commands for Dynamic Mock Server
+ *                 
+ *                 # Get User Profile
+ *                 http GET http://localhost:8080/users/123 Authorization:"Bearer token"
+ */
 // GET /mocks/export/httpie - Generate HTTPie commands
 router.get('/export/httpie', (req, res) => {
     try {
@@ -479,6 +1017,38 @@ router.get('/export/httpie', (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /mocks/placeholders:
+ *   get:
+ *     summary: Get available dynamic placeholders
+ *     tags: [Mocks]
+ *     description: Retrieve a list of all available Faker.js placeholders and their categories for use in dynamic responses
+ *     responses:
+ *       200:
+ *         description: Placeholders retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 categories:
+ *                   type: object
+ *                   description: Placeholders organized by category
+ *                   example:
+ *                     person: ["{{faker.person.firstName}}", "{{faker.person.lastName}}"]
+ *                     internet: ["{{faker.internet.email}}", "{{faker.internet.url}}"]
+ *                 examples:
+ *                   type: object
+ *                   description: Example use cases
+ *                   properties:
+ *                     basicUser:
+ *                       type: object
+ *                       example:
+ *                         id: "{{uuid}}"
+ *                         name: "{{name}}"
+ *                         email: "{{email}}"
+ */
 // GET /mocks/placeholders - Get available dynamic placeholders
 router.get('/placeholders', (req, res) => {
     try {
@@ -514,6 +1084,62 @@ router.get('/placeholders', (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /mocks/preview:
+ *   post:
+ *     summary: Preview dynamic response without saving
+ *     tags: [Mocks]
+ *     description: Test how a response template would look with dynamic values processed, without creating or modifying any mocks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - response
+ *             properties:
+ *               response:
+ *                 type: object
+ *                 description: Response template with placeholders
+ *                 example:
+ *                   id: "{{faker.datatype.number}}"
+ *                   name: "{{faker.person.fullName}}"
+ *                   email: "{{faker.internet.email}}"
+ *               delay:
+ *                 description: Optional delay configuration for testing
+ *                 oneOf:
+ *                   - type: integer
+ *                   - type: object
+ *     responses:
+ *       200:
+ *         description: Preview generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 preview:
+ *                   type: object
+ *                   description: Processed response with dynamic values
+ *                 metadata:
+ *                   type: object
+ *                   properties:
+ *                     generated:
+ *                       type: string
+ *                       format: date-time
+ *                     dynamicValues:
+ *                       type: boolean
+ *                     processingTime:
+ *                       type: integer
+ *       400:
+ *         description: Bad request - missing response template
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // POST /mocks/preview - Preview dynamic response without saving
 router.post('/preview', async (req, res) => {
     try {

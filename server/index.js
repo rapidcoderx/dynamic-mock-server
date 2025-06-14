@@ -10,6 +10,7 @@ const { trackRequest } = require('./middleware/analytics');
 const { findMock } = require('../utils/matcher');
 const { loadMocks, closeStorage, getStorageInfo } = require('../utils/storageStrategy');
 const dynamicResponse = require('../utils/dynamicResponse');
+const { specs, swaggerServe, swaggerSetup } = require('./swagger');
 
 /**
  * Dynamic Mock Server
@@ -51,6 +52,25 @@ async function startServer() {
     // Serve static files under the prefix
     app.use(`${API_PREFIX}/`, express.static(path.join(__dirname, '..', 'public')));
 
+    // Swagger API Documentation
+    app.use(`${API_PREFIX}/docs`, swaggerServe, swaggerSetup);
+    app.use(`${API_PREFIX}/swagger`, swaggerServe, swaggerSetup); // Alternative path
+
+    /**
+     * @swagger
+     * /health:
+     *   get:
+     *     summary: Health check endpoint
+     *     tags: [System]
+     *     description: Check the health status of the mock server and its storage connections
+     *     responses:
+     *       200:
+     *         description: Server is healthy
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/HealthCheck'
+     */
     // Health check endpoint
     app.get(`${API_PREFIX}/health`, (req, res) => {
         const storageInfo = getStorageInfo();
@@ -66,6 +86,37 @@ async function startServer() {
     app.use(`${API_PREFIX}/mocks`, mockRoutes);
     app.use(`${API_PREFIX}/analytics`, analyticsRoutes);
 
+    /**
+     * @swagger
+     * /config:
+     *   get:
+     *     summary: Get server configuration
+     *     tags: [System]
+     *     description: Retrieve the current server configuration including API prefix and storage information
+     *     responses:
+     *       200:
+     *         description: Configuration retrieved successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 apiPrefix:
+     *                   type: string
+     *                   description: API prefix used by the server
+     *                   example: '/api'
+     *                 storage:
+     *                   type: object
+     *                   properties:
+     *                     type:
+     *                       type: string
+     *                       description: Storage backend type
+     *                       example: 'postgresql'
+     *                     initialized:
+     *                       type: boolean
+     *                       description: Whether storage is initialized
+     *                       example: true
+     */
     app.get(`${API_PREFIX}/config`, (req, res) => {
         const storageInfo = getStorageInfo();
         res.json({ 
@@ -81,6 +132,8 @@ app.use(async (req, res, next) => {
         `${API_PREFIX}/config`,
         `${API_PREFIX}/mocks`,
         `${API_PREFIX}/analytics`,
+        `${API_PREFIX}/docs`,
+        `${API_PREFIX}/swagger`,
     ];
 
     if (skipPaths.some(p => req.path.startsWith(p))) return next();

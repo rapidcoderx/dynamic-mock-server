@@ -2034,6 +2034,8 @@
 
         .tab-content {
             display: block;
+            height: 70vh;
+            overflow-y: auto;
         }
 
         .tab-content.hidden {
@@ -2233,6 +2235,9 @@
             </button>
             <button type="button" id="helpBtn" class="liquid-button p-3 text-xl" title="Help & Shortcuts (Ctrl+H)">
                 ❓
+            </button>
+            <button type="button" id="swaggerBtn" class="liquid-button p-3 text-xl" title="API Documentation (Swagger)">
+                🌐
             </button>
         </div>
         </div>
@@ -2893,7 +2898,7 @@
             const request = allRequests.find(r => r.id === requestId);
             
             if (!request) {
-                alert('Request details not found');
+                showNotification('Request details not found', 'error');
                 return;
             }
             
@@ -3092,12 +3097,26 @@
                 document.getElementById('historyTab').addEventListener('click', () => switchTab('history'));
 
                 // Dashboard button events
-                document.getElementById('refreshDashboard').addEventListener('click', loadDashboardData);
+                document.getElementById('refreshDashboard').addEventListener('click', async () => {
+                    try {
+                        await loadDashboardData();
+                        showNotification('Dashboard refreshed successfully', 'success', 2000);
+                    } catch (error) {
+                        showNotification('Failed to refresh dashboard', 'error');
+                    }
+                });
                 document.getElementById('clearAnalytics').addEventListener('click', clearAnalyticsData);
                 document.getElementById('exportAnalytics').addEventListener('click', exportAnalyticsData);
 
                 // History button events
-                document.getElementById('refreshHistory').addEventListener('click', loadHistoryData);
+                document.getElementById('refreshHistory').addEventListener('click', async () => {
+                    try {
+                        await loadHistoryData();
+                        showNotification('Request history refreshed successfully', 'success', 2000);
+                    } catch (error) {
+                        showNotification('Failed to refresh request history', 'error');
+                    }
+                });
                 document.getElementById('exportHistory').addEventListener('click', exportHistoryData);
                 document.getElementById('applyFilters').addEventListener('click', applyHistoryFilters);
                 document.getElementById('clearFilters').addEventListener('click', clearHistoryFilters);
@@ -3471,23 +3490,25 @@
             }
 
             async function clearAnalyticsData() {
-                if (!confirm('Are you sure you want to clear all analytics data? This action cannot be undone.')) {
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`${API_PREFIX}/analytics`, { method: 'DELETE' });
-                    if (response.ok) {
-                        showNotification('Analytics data cleared successfully', 'success');
-                        loadDashboardData();
-                        loadHistoryData();
-                    } else {
-                        throw new Error('Failed to clear analytics data');
+                showConfirmDialog(
+                    'Clear Analytics Data',
+                    'Are you sure you want to clear all analytics data? This action cannot be undone.',
+                    async () => {
+                        try {
+                            const response = await fetch(`${API_PREFIX}/analytics`, { method: 'DELETE' });
+                            if (response.ok) {
+                                showNotification('Analytics data cleared successfully', 'success');
+                                loadDashboardData();
+                                loadHistoryData();
+                            } else {
+                                throw new Error('Failed to clear analytics data');
+                            }
+                        } catch (error) {
+                            console.error('Error clearing analytics:', error);
+                            showNotification('Failed to clear analytics data', 'error');
+                        }
                     }
-                } catch (error) {
-                    console.error('Error clearing analytics:', error);
-                    showNotification('Failed to clear analytics data', 'error');
-                }
+                );
             }
 
             async function exportAnalyticsData() {
@@ -3563,6 +3584,7 @@
                 setupEditForm();
                 setupExportImport();
                 setupHelp();
+                setupSwagger();
                 setupPlaceholders();
                 setupRequestDetailsModal();
             }
@@ -3696,7 +3718,14 @@
                     modal.classList.remove('hidden');
                 };
 
-                refreshBtn.onclick = loadMocks;
+                refreshBtn.onclick = async () => {
+                    try {
+                        await loadMocks(false); // Don't show the built-in load notification
+                        showNotification('Mocks refreshed successfully', 'success', 2000);
+                    } catch (error) {
+                        showNotification('Failed to refresh mocks', 'error');
+                    }
+                };
 
                 closeModal.onclick = () => {
                     modal.classList.add('hidden');
@@ -4168,6 +4197,28 @@
                 });
             }
 
+            // Swagger API Documentation functionality
+            function setupSwagger() {
+                const swaggerBtn = document.getElementById('swaggerBtn');
+                
+                swaggerBtn.onclick = () => {
+                    // Get the current API prefix from config
+                    fetch(`${API_PREFIX}/config`)
+                        .then(response => response.json())
+                        .then(config => {
+                            const swaggerUrl = `${window.location.origin}${config.apiPrefix}/docs`;
+                            // Open Swagger UI in a new tab
+                            window.open(swaggerUrl, '_blank', 'noopener,noreferrer');
+                        })
+                        .catch(error => {
+                            console.error('Error getting config:', error);
+                            // Fallback to default API prefix
+                            const swaggerUrl = `${window.location.origin}${API_PREFIX}/docs`;
+                            window.open(swaggerUrl, '_blank', 'noopener,noreferrer');
+                        });
+                };
+            }
+
             // Dynamic Placeholders functionality
             function setupPlaceholders() {
                 const showPlaceholdersBtn = document.getElementById('showPlaceholders');
@@ -4367,6 +4418,57 @@
                     document.body.removeChild(textarea);
                     showNotification(`📋 Copied: ${text}`, 'success', 2000);
                 });
+            }
+
+            // Confirmation Dialog System
+            function showConfirmDialog(title, message, onConfirm, onCancel = null) {
+                // Create confirmation modal dynamically
+                const modal = document.createElement('div');
+                modal.className = 'modal-overlay fixed inset-0 z-50 bg-black/50 flex items-center justify-center';
+                modal.innerHTML = `
+                    <div class="enhanced-glass p-6 max-w-md w-full mx-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-white mb-3">${title}</h3>
+                        <p class="text-gray-300 mb-6">${message}</p>
+                        <div class="flex gap-3 justify-end">
+                            <button class="cancel-btn px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors">
+                                Cancel
+                            </button>
+                            <button class="confirm-btn px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition-colors">
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                const cancelBtn = modal.querySelector('.cancel-btn');
+                const confirmBtn = modal.querySelector('.confirm-btn');
+                
+                const closeModal = () => {
+                    document.body.removeChild(modal);
+                };
+                
+                cancelBtn.onclick = () => {
+                    closeModal();
+                    if (onCancel) onCancel();
+                };
+                
+                confirmBtn.onclick = () => {
+                    closeModal();
+                    if (onConfirm) onConfirm();
+                };
+                
+                // Close on backdrop click
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                        if (onCancel) onCancel();
+                    }
+                };
+                
+                // Focus the confirm button
+                setTimeout(() => confirmBtn.focus(), 100);
             }
 
             // Smart Notification System

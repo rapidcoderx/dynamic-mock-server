@@ -21,13 +21,17 @@ function getStorageType() {
 
 function getStorageInstance() {
     const storageType = getStorageType();
+    logger.debug(`🔧 Storage strategy - Getting storage instance for type: ${storageType}`);
     
     switch (storageType) {
         case 'postgres':
         case 'postgresql':
+            logger.debug('🐘 Storage strategy - Requesting PostgreSQL storage instance');
             if (!postgresStorage) {
+                logger.info('🐘 Storage strategy - Creating new PostgreSQL storage instance');
                 postgresStorage = new PostgresStorage();
             }
+            logger.debug('🐘 Storage strategy - Returning PostgreSQL storage instance');
             return postgresStorage;
             
         case 'mongodb':
@@ -180,5 +184,6 @@ module.exports = {
     getMockById, 
     closeStorage,
     getStorageInfo,
-    getStorageType
+    getStorageType,
+    getStorageInstance
 };

@@ -14,11 +14,28 @@ const analyticsStore = {
  */
 async function getStorage() {
     try {
+        logger.debug('📊 Analytics - Getting storage instance for analytics...');
         const storage = getStorageInstance();
+        logger.debug(`📊 Analytics - Storage instance obtained: ${storage ? 'success' : 'null'}`);
+        
         if (storage && typeof storage.saveRequestHistory === 'function') {
+            logger.debug('📊 Analytics - Storage has saveRequestHistory method, checking initialization...');
+            
+            // Check if storage is initialized
+            if (!storage.initialized) {
+                logger.info('📊 Analytics - Storage not initialized, attempting to initialize...');
+                await storage.initialize();
+                logger.info('📊 Analytics - Storage initialization completed');
+            }
+            
+            logger.debug('📊 Analytics - Storage is ready for use');
             return storage;
+        } else {
+            logger.warn('📊 Analytics - Storage instance missing or lacks saveRequestHistory method');
         }
     } catch (error) {
+        logger.error(`📊 Analytics - Error getting storage: ${error.message}`);
+        logger.error(`📊 Analytics - Error stack: ${error.stack}`);
         logger.warn('Analytics storage not available, using in-memory fallback');
     }
     return null;
@@ -52,8 +69,10 @@ function trackRequest(req, res, next) {
     
     const startTime = Date.now();
     
-    // Track request start
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Track request start - ensure unique ID with timestamp, random string, and process hrtime
+    const hrTime = process.hrtime.bigint();
+    const randomPart = Math.random().toString(36).substr(2, 12);
+    const requestId = `req_${Date.now()}_${hrTime}_${randomPart}`;
     const requestData = {
         id: requestId,
         timestamp: new Date(),
@@ -135,8 +154,16 @@ function trackRequest(req, res, next) {
         updateDailyStats(requestData);
         
         // Save to database asynchronously (don't block response)
+        logger.debug('📊 Analytics - Calling saveToDatabase...', {
+            id: requestData.id,
+            method: requestData.method,
+            path: requestData.path
+        });
         saveToDatabase(requestData).catch(error => {
-            logger.error('Failed to save analytics to database:', error.message);
+            logger.error('📊 Analytics - Failed to save analytics to database:', {
+                message: error.message,
+                stack: error.stack
+            });
         });
         
         logger.debug(`📊 Tracked request: ${req.method} ${req.path} - ${responseTime}ms - ${res.statusCode}`);
@@ -381,23 +408,42 @@ async function clearAnalytics() {
  * Save analytics data to database
  */
 async function saveToDatabase(requestData) {
+    logger.debug('📊 Analytics - Attempting to save to database...', {
+        id: requestData.id,
+        method: requestData.method,
+        path: requestData.path
+    });
+    
     const storage = await getStorage();
-    if (!storage) return;
+    if (!storage) {
+        logger.debug('📊 Analytics - No storage available, skipping database save');
+        return;
+    }
 
     try {
+        logger.debug('📊 Analytics - Storage available, saving request history...');
         // Save request history
         await storage.saveRequestHistory(requestData);
+        logger.debug('📊 Analytics - Request history saved successfully');
         
         // Update mock hits if applicable
         if (requestData.mockMatched) {
+            logger.debug('📊 Analytics - Updating mock hits...');
             await storage.updateMockHits(requestData.mockMatched.id, requestData.mockMatched.name);
+            logger.debug('📊 Analytics - Mock hits updated successfully');
         }
         
         // Update daily stats
+        logger.debug('📊 Analytics - Updating daily stats...');
         await storage.updateDailyStats(requestData);
+        logger.debug('📊 Analytics - Daily stats updated successfully');
         
     } catch (error) {
-        logger.error('Error saving analytics to database:', error.message);
+        logger.error('📊 Analytics - Error saving analytics to database:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
     }
 }
 

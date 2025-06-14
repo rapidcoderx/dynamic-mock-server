@@ -32,8 +32,8 @@ setup_postgres() {
     
     echo ""
     echo "📝 PostgreSQL Database Setup"
-    read -p "Enter database name (default: mock_server): " DB_NAME
-    DB_NAME=${DB_NAME:-mock_server}
+    read -p "Enter database name (default: dynamic_mock_server): " DB_NAME
+    DB_NAME=${DB_NAME:-dynamic_mock_server}
     
     read -p "Enter database user (default: postgres): " DB_USER
     DB_USER=${DB_USER:-postgres}
@@ -53,15 +53,13 @@ setup_postgres() {
     cat >> .env << EOF
 
 # PostgreSQL Configuration
-STORAGE_TYPE=postgres
+STORAGE_TYPE=postgresql
 POSTGRES_HOST=$DB_HOST
 POSTGRES_PORT=$DB_PORT
 POSTGRES_USER=$DB_USER
 POSTGRES_PASSWORD=$DB_PASSWORD
 POSTGRES_DB=$DB_NAME
-
-# Alternative: Use connection string instead
-# DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME
+DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME
 EOF
     
     echo "✅ PostgreSQL configuration added to .env"
@@ -91,8 +89,8 @@ setup_mongodb() {
     
     echo ""
     echo "📝 MongoDB Database Setup"
-    read -p "Enter database name (default: mock_server): " DB_NAME
-    DB_NAME=${DB_NAME:-mock_server}
+    read -p "Enter database name (default: dynamic_mock_server): " DB_NAME
+    DB_NAME=${DB_NAME:-dynamic_mock_server}
     
     read -p "Enter database host (default: localhost): " DB_HOST
     DB_HOST=${DB_HOST:-localhost}
@@ -110,9 +108,7 @@ STORAGE_TYPE=mongodb
 MONGO_HOST=$DB_HOST
 MONGO_PORT=$DB_PORT
 MONGO_DB=$DB_NAME
-
-# Alternative: Use connection string instead
-# MONGODB_URL=mongodb://$DB_HOST:$DB_PORT/$DB_NAME
+MONGODB_URL=mongodb://$DB_HOST:$DB_PORT/$DB_NAME
 EOF
     
     echo "✅ MongoDB configuration added to .env"

@@ -9,7 +9,12 @@ class PostgresStorage {
     }
 
     async initialize() {
-        if (this.initialized) return;
+        if (this.initialized) {
+            logger.debug('🐘 PostgreSQL storage already initialized');
+            return;
+        }
+
+        logger.info('🐘 Starting PostgreSQL storage initialization...');
 
         const config = {
             connectionString: process.env.DATABASE_URL || 
@@ -17,13 +22,24 @@ class PostgresStorage {
             ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
         };
 
-        logger.info('🐘 Initializing PostgreSQL storage with config:', config);
+        logger.info('🐘 PostgreSQL config created:', {
+            host: process.env.POSTGRES_HOST || 'localhost',
+            port: process.env.POSTGRES_PORT || 5432,
+            user: process.env.POSTGRES_USER || 'postgres',
+            database: process.env.POSTGRES_DB || 'mock_server',
+            hasPassword: !!(process.env.POSTGRES_PASSWORD),
+            connectionString: config.connectionString,
+            ssl: config.ssl
+        });
 
         this.pool = new Pool(config);
+        logger.debug('🐘 PostgreSQL pool created');
 
         try {
+            logger.debug('🐘 Testing PostgreSQL connection...');
             // Test connection
             const client = await this.pool.connect();
+            logger.debug('🐘 PostgreSQL connection successful!');
             
             // Create table if it doesn't exist
             await client.query(`
@@ -47,8 +63,10 @@ class PostgresStorage {
                 CREATE INDEX IF NOT EXISTS idx_mocks_method_path ON mocks(method, path);
                 CREATE INDEX IF NOT EXISTS idx_mocks_headers ON mocks USING GIN(headers);
             `);
+            logger.debug('🐘 Main mocks table and indexes created');
 
             // Create analytics tables
+            logger.debug('🐘 Creating analytics tables...');
             await client.query(`
                 CREATE TABLE IF NOT EXISTS request_history (
                     id VARCHAR(255) PRIMARY KEY,
@@ -69,6 +87,7 @@ class PostgresStorage {
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             `);
+            logger.debug('🐘 request_history table created');
 
             await client.query(`
                 CREATE TABLE IF NOT EXISTS mock_hits (
@@ -82,6 +101,7 @@ class PostgresStorage {
                     UNIQUE(mock_id)
                 );
             `);
+            logger.debug('🐘 mock_hits table created');
 
             await client.query(`
                 CREATE TABLE IF NOT EXISTS daily_stats (
@@ -100,6 +120,7 @@ class PostgresStorage {
                     UNIQUE(date)
                 );
             `);
+            logger.debug('🐘 daily_stats table created');
 
             // Create indexes for analytics performance
             await client.query(`
@@ -111,13 +132,32 @@ class PostgresStorage {
                 CREATE INDEX IF NOT EXISTS idx_mock_hits_mock_id ON mock_hits(mock_id);
                 CREATE INDEX IF NOT EXISTS idx_daily_stats_date ON daily_stats(date);
             `);
+            logger.debug('🐘 Analytics indexes created');
 
             client.release();
             this.initialized = true;
             logger.info('🐘 PostgreSQL storage initialized successfully');
 
         } catch (err) {
-            logger.error('❌ Failed to initialize PostgreSQL storage:', err.message);
+            logger.error('❌ Failed to initialize PostgreSQL storage:', {
+                message: err.message,
+                code: err.code,
+                detail: err.detail,
+                hint: err.hint,
+                position: err.position,
+                internalPosition: err.internalPosition,
+                internalQuery: err.internalQuery,
+                where: err.where,
+                schema: err.schema,
+                table: err.table,
+                column: err.column,
+                dataType: err.dataType,
+                constraint: err.constraint,
+                file: err.file,
+                line: err.line,
+                routine: err.routine,
+                stack: err.stack
+            });
             throw err;
         }
     }
@@ -326,12 +366,25 @@ class PostgresStorage {
         await this.initialize();
         
         try {
+            logger.debug('📊 Saving request history to PostgreSQL:', {
+                id: requestData.id,
+                method: requestData.method,
+                path: requestData.path,
+                mockMatched: !!requestData.mockMatched,
+                statusCode: requestData.statusCode
+            });
+            
             await this.pool.query(`
                 INSERT INTO request_history (
                     id, timestamp, method, path, headers, query_params, body_size,
                     user_agent, ip_address, mock_matched, mock_id, mock_name,
                     response_time, status_code, response_size
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                ON CONFLICT (id) DO UPDATE SET
+                    timestamp = EXCLUDED.timestamp,
+                    response_time = EXCLUDED.response_time,
+                    status_code = EXCLUDED.status_code,
+                    response_size = EXCLUDED.response_size
             `, [
                 requestData.id,
                 requestData.timestamp,
@@ -349,10 +402,25 @@ class PostgresStorage {
                 requestData.statusCode,
                 requestData.responseSize
             ]);
+            
+            logger.debug('✅ Request history saved to PostgreSQL successfully');
 
         } catch (err) {
-            logger.error('❌ Failed to save request history to PostgreSQL:', err.message);
-            throw err;
+            if (err.code === '23505') { // Unique violation error code
+                logger.warn('⚠️ Duplicate request ID detected, but handled with ON CONFLICT:', {
+                    requestId: requestData.id,
+                    message: err.message
+                });
+            } else {
+                logger.error('❌ Failed to save request history to PostgreSQL:', {
+                    message: err.message,
+                    code: err.code,
+                    detail: err.detail,
+                    requestId: requestData.id,
+                    stack: err.stack
+                });
+                throw err;
+            }
         }
     }
 
