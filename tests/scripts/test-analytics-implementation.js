@@ -1,7 +1,7 @@
 // Test Analytics Implementation
 // This file demonstrates how the analytics system works
 
-const analytics = require('./server/middleware/analytics');
+const analytics = require('../../server/middleware/analytics');
 
 // Simulate some mock request data
 console.log('🧪 Testing Analytics Implementation\n');

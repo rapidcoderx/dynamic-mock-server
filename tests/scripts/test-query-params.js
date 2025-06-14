@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Test script to validate query parameter functionality
-const { findMock } = require('./utils/matcher');
+const { findMock } = require('../../utils/matcher');
 
 // Sample mocks for testing
 const testMocks = [

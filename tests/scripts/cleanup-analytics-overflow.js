@@ -14,8 +14,8 @@ try {
   console.log('   If you need to use a .env file, run: npm install dotenv --save');
 }
 
-const { getStorageInstance } = require('./utils/storageStrategy');
-const PostgresStorage = require('./utils/postgresStorage');
+const { getStorageInstance } = require('../../utils/storageStrategy');
+const PostgresStorage = require('../../utils/postgresStorage');
 
 async function checkCurrentStorage() {
     console.log('� Checking current storage configuration...');

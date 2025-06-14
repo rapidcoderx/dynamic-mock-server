@@ -8,7 +8,13 @@
     "setup-db": "./setup-database.sh",
     "ncu": "ncu -u",
     "build-css": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
-    "build-css-prod": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify"
+    "build-css-prod": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify",
+    "test-analytics": "node ./tests/scripts/test-analytics-implementation.js",
+    "test-dynamic": "node ./tests/scripts/test-dynamic.js",
+    "test-matcher": "node ./tests/scripts/test-matcher.js",
+    "test-storage": "node ./tests/scripts/test-storage.js",
+    "test-query-params": "node ./tests/scripts/test-query-params.js",
+    "cleanup-analytics": "node ./tests/scripts/cleanup-analytics.js"
   },
   "keywords": [],
   "author": "",

@@ -11,6 +11,7 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 ## 🏆 Key Achievements
 
 **🎯 Production-Ready**: Complete CRUD operations, persistent storage, and robust error handling  
+**🔍 Advanced Search & Pagination**: Real-time search with debouncing and smart pagination for handling large mock datasets  
 **🎲 Dynamic & Intelligent**: 60+ Faker.js placeholders with realistic response delays  
 **🔍 Advanced Matching**: Query parameter and header-based routing with 7 match types  
 **�️ Multi-Storage Support**: File, PostgreSQL, and MongoDB backends with automatic migration  
@@ -25,20 +26,6 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
 
 A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities. Configure and simulate API responses easily for local testing, demos, or prototyping – all with a beautiful frontend and modular backend.
 
-## 🏆 Key Achievements
-
-**🎯 Production-Ready**: Complete CRUD operations, persistent storage, and robust error handling  
-**🎲 Dynamic & Intelligent**: 60+ Faker.js placeholders with realistic response delays  
-**�️ Multi-Storage Support**: File, PostgreSQL, and MongoDB backends with automatic migration  
-**�🔄 Integration-Friendly**: Export to JSON, Postman collections, and HTTPie commands  
-**📡 API Collections**: Ready-to-use Postman, HTTPie Desktop, and CLI collections  
-**🎨 Modern UX**: Liquid glass UI with keyboard shortcuts and smart notifications  
-**📚 Well-Documented**: Comprehensive guides, examples, and API reference  
-
-> *Ready for real-world use with enterprise-grade features and developer-focused design*
-
----
-
 ## ✨ Features
 
 - 🧱 **Complete Mock Management**:
@@ -48,6 +35,10 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   - Custom response body (as JSON) with status codes
   - Edit existing mocks with full validation
   - Delete mocks with confirmation dialogs
+  - **Advanced Search & Pagination**: Real-time search across mock names, paths, methods, and IDs
+  - **Intelligent Filtering**: Debounced search with instant results and clear functionality
+  - **Flexible Pagination**: Configurable page sizes (10, 25, 50, 100) with smart navigation
+  - **State Preservation**: Search and pagination context maintained during CRUD operations
 - 🎲 **Dynamic Values & Response Delays**:
   - Dynamic value generation using Faker.js (names, emails, timestamps, UUIDs, etc.)
   - Template placeholders for realistic data ({{name}}, {{email}}, {{timestamp}})
@@ -67,7 +58,11 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   - **Interactive Demo**: Automated demo script showcasing all features
   - Export/Import functionality for backup and migration
 - 👁️ **Rich UI Experience**: 
-  - Modal-based mock viewer with full details
+  - Modal-based mock viewer with **search and pagination capabilities**
+  - **Real-time Search**: Instant filtering with debounced input and clear button
+  - **Smart Pagination**: Configurable page sizes with Previous/Next navigation
+  - **Live Updates**: Search and pagination state preserved during mock operations
+  - **Loading Indicators**: Visual feedback during search operations
   - Smart notification system with contextual feedback
   - Responsive liquid glass theme using Tailwind CSS v4
   - Keyboard shortcuts and intuitive navigation
@@ -95,6 +90,13 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   ├── tracer.js               # Request tracing utilities
   └── routes/
       └── mockRoutes.js       # Complete mock CRUD operations & export/import
+
+/tests
+  └── scripts/                # Test scripts and utilities
+      ├── test-*.js           # JavaScript test files
+      ├── test-*.sh           # Bash test scripts
+      ├── cleanup-*.js        # Cleanup utilities
+      └── cleanup-*.sh        # Cleanup shell scripts
 
 /utils
   ├── matcher.js              # Advanced mock matching logic
@@ -437,7 +439,12 @@ curl -X POST http://localhost:8080/api/mocks \
 
 ### ✅ Via UI
 - **Create**: Add new mocks via the intuitive form interface
-- **View**: Browse all mocks in a beautiful modal with search and filtering
+- **View**: Browse all mocks in a powerful modal with **advanced search and pagination**:
+  - **Real-time Search**: Filter mocks by name, path, method, or ID as you type
+  - **Smart Pagination**: Navigate through pages with configurable page sizes (10, 25, 50, 100)
+  - **Instant Clear**: Use the ✕ button or ESC key to quickly clear search
+  - **Live Updates**: Search and pagination state preserved during mock operations
+  - **Performance Optimized**: Debounced search for smooth typing experience
 - **Edit**: Modify existing mocks with inline editing capabilities
 - **Delete**: Remove mocks with confirmation dialogs for safety
 - **Test**: Built-in mock testing functionality to verify request matching
@@ -592,7 +599,10 @@ Configure realistic network delays in Advanced Options:
 - `Ctrl + I`: Open import modal (⬇️)
 - `Ctrl + P`: Export Postman collection (📋)
 - `Ctrl + H`: Show help & shortcuts (❓)
-- `ESC`: Close any open modal
+- `ESC`: Close any open modal or clear search in mock viewer
+- **Search & Navigation** (in mock viewer):
+  - `ESC`: Clear search and return to full mock list
+  - Click `✕`: Clear search with mouse
 
 ---
 
@@ -643,6 +653,9 @@ Configure realistic network delays in Advanced Options:
 
 ### 🎯 **Core Functionality** 
 - [x] **Complete Mock Management**: Full CRUD operations with validation
+- [x] **Advanced Search & Pagination**: Real-time search with debouncing, smart pagination, and state preservation
+- [x] **Intelligent Filtering**: Search across mock names, paths, methods, and IDs with instant clear functionality
+- [x] **Flexible Pagination**: Configurable page sizes (10, 25, 50, 100) with Previous/Next navigation
 - [x] **Header-based Routing**: Advanced request matching with optional headers
 - [x] **Query Parameter Matching**: 7 match types (equals, contains, starts_with, ends_with, regex, exists, not_exists)
 - [x] **Mock Analysis**: Conflict detection and duplicate identification
@@ -684,7 +697,11 @@ Configure realistic network delays in Advanced Options:
 - [x] **Documentation**: Comprehensive usage guides and troubleshooting
 
 ### 🎨 **User Experience**
-- [x] **Keyboard Shortcuts**: Full keyboard navigation (Ctrl+E, Ctrl+I, Ctrl+P, etc.)
+- [x] **Advanced Search Interface**: Real-time search with debounced input and instant clear functionality
+- [x] **Smart Pagination**: Configurable page sizes with Previous/Next navigation and live count updates
+- [x] **State Preservation**: Search and pagination context maintained during mock CRUD operations
+- [x] **Loading Indicators**: Visual feedback during search operations ("Searching..." status)
+- [x] **Keyboard Shortcuts**: Full keyboard navigation (Ctrl+E, Ctrl+I, Ctrl+P, ESC to clear search, etc.)
 - [x] **Smart Notifications**: Contextual feedback system with auto-dismiss
 - [x] **Modal System**: Comprehensive modal-based interfaces
 - [x] **Help System**: Built-in help modal with shortcuts and API reference

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { getStorageInfo } = require('./utils/storageStrategy');
+const { getStorageInfo } = require('../../utils/storageStrategy');
 
 async function testStorage() {
     console.log('🔍 Testing Storage Configuration...\n');

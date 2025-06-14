@@ -1,4 +1,4 @@
-const { findMock } = require('./utils/matcher');
+const { findMock } = require('../../utils/matcher');
 
 // Test data mimicking your mocks
 const testMocks = [

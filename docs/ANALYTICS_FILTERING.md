@@ -53,13 +53,13 @@ Use these scripts to verify the filtering works correctly:
 
 ```bash
 # Test that analytics calls are filtered out
-./test-analytics-filtering.sh
+./tests/scripts/test-analytics-filtering.sh
 
 # Clear existing noisy data and start fresh
-./clear-analytics.sh
+./tests/scripts/clear-analytics.sh
 
 # Test all analytics endpoints work
-./test-analytics-api.sh
+./tests/scripts/test-analytics-api.sh
 ```
 
 ## 🚀 Best Practices

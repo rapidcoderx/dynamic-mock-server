@@ -205,7 +205,7 @@ curl http://localhost:8080/api/analytics/dashboard
 1. **Check PostgreSQL connection**: Ensure database is running
 2. **Check environment variables**: Verify STORAGE_TYPE=postgres
 3. **Check logs**: Look for database connection errors
-4. **Test manually**: Run `./test-postgres-analytics.sh`
+4. **Test manually**: Run `./tests/scripts/test-postgres-analytics.sh`
 
 ### Verify Tables Created:
 ```sql

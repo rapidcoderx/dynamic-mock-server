@@ -2443,7 +2443,51 @@
                 <h2 class="text-2xl font-bold">⊞ Registered Mocks</h2>
                 <button id="refreshMocks" class="absolute top-2 right-12 text-xl" title="Refresh Mocks">⟲</button>
             </div>
-            <div id="mockTable" class="space-y-3 max-h-[60vh] overflow-y-auto"></div>
+            
+            <!-- Search and Info Bar -->
+            <div class="mb-4 space-y-3">
+                <div class="flex items-center gap-3">
+                    <div class="flex-1 relative">
+                        <input 
+                            type="text" 
+                            id="mockSearch" 
+                            placeholder="Search mocks by name, path, method..." 
+                            class="w-full px-3 py-2 pr-10 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                        />
+                        <button 
+                            id="clearSearch"
+                            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200 px-1 hidden"
+                            title="Clear search"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    <div id="mockCount" class="text-sm text-gray-300 whitespace-nowrap">
+                        <!-- Mock count will be displayed here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div id="mockTable" class="space-y-3 max-h-[50vh] overflow-y-auto"></div>
+            
+            <!-- Pagination Controls -->
+            <div id="paginationContainer" class="mt-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <button id="prevPage" class="liquid-button px-3 py-1 text-sm" disabled>← Prev</button>
+                    <div id="pageInfo" class="text-sm text-gray-300">
+                        <!-- Page info will be displayed here -->
+                    </div>
+                    <button id="nextPage" class="liquid-button px-3 py-1 text-sm" disabled>Next →</button>
+                </div>
+                <div class="text-xs text-gray-400">
+                    <select id="itemsPerPage" class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white">
+                        <option value="10" selected>10 per page</option>
+                        <option value="25">25 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="100">100 per page</option>
+                    </select>
+                </div>
+            </div>
             </div>
         </div>
     </div>
@@ -3647,6 +3691,12 @@
                         form.reset();
                         resetQueryParams('queryParamsContainer');
                         showNotification(`Mock "${name}" created successfully`, 'success');
+                        
+                        // If mock modal is open, refresh the list while preserving state
+                        const mockModal = document.getElementById('mockModal');
+                        if (mockModal && !mockModal.classList.contains('hidden')) {
+                            await refreshMocksWithState(false);
+                        }
                     } else {
                         const error = await res.json();
                         showNotification(`Error: ${error.error}`, 'error');
@@ -3656,6 +3706,16 @@
 
             // Global loadMocks function that can be called from anywhere
             let mockTable;
+            
+            // Global state for search and pagination
+            let allMocks = [];
+            let filteredMocks = [];
+            let currentPage = 1;
+            let itemsPerPage = 10;
+            let currentSearchTerm = '';
+            let searchDebounceTimer = null;
+            let isSearching = false;
+            
             const loadMocks = async (showLoadNotification = true) => {
                 if (!mockTable) {
                     mockTable = document.getElementById('mockTable');
@@ -3663,7 +3723,15 @@
                 try {
                     const res = await fetch(`${API_PREFIX}/mocks`);
                     const mocks = await res.json();
-                    renderMockList(mocks, mockTable);
+                    
+                    // Store all mocks and reset pagination
+                    allMocks = mocks;
+                    currentPage = 1;
+                    currentSearchTerm = '';
+                    
+                    // Apply current search and render
+                    filterAndRenderMocks();
+                    
                     if (mocks.length > 0 && showLoadNotification) {
                         showNotification(`Loaded ${mocks.length} mock${mocks.length !== 1 ? 's' : ''}`, 'info', 2000);
                     }
@@ -3672,6 +3740,105 @@
                     showNotification(`Error loading mocks: ${err.message}`, 'error');
                 }
             };
+            
+            // Filter mocks based on search term
+            function filterMocks(searchTerm) {
+                if (!searchTerm) {
+                    return allMocks;
+                }
+                
+                const term = searchTerm.toLowerCase();
+                return allMocks.filter(mock => 
+                    mock.name.toLowerCase().includes(term) ||
+                    mock.path.toLowerCase().includes(term) ||
+                    mock.method.toLowerCase().includes(term) ||
+                    (mock.id && mock.id.toLowerCase().includes(term))
+                );
+            }
+            
+            // Update pagination controls
+            function updatePaginationUI() {
+                const totalItems = filteredMocks.length;
+                const totalPages = Math.ceil(totalItems / itemsPerPage);
+                
+                // Update page info
+                const pageInfo = document.getElementById('pageInfo');
+                if (totalPages > 0) {
+                    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                } else {
+                    pageInfo.textContent = 'No pages';
+                }
+                
+                // Update navigation buttons
+                const prevBtn = document.getElementById('prevPage');
+                const nextBtn = document.getElementById('nextPage');
+                
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = currentPage >= totalPages;
+                
+                // Update mock count
+                const mockCount = document.getElementById('mockCount');
+                const startItem = totalItems > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0;
+                const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+                
+                if (totalItems > 0) {
+                    mockCount.textContent = `Showing ${startItem}-${endItem} of ${totalItems} mock${totalItems !== 1 ? 's' : ''}`;
+                } else {
+                    mockCount.textContent = 'No mocks found';
+                }
+            }
+            
+            // Get mocks for current page
+            function getCurrentPageMocks() {
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                return filteredMocks.slice(startIndex, endIndex);
+            }
+            
+            // Main function to filter and render mocks
+            function filterAndRenderMocks() {
+                // Apply search filter
+                filteredMocks = filterMocks(currentSearchTerm);
+                
+                // Reset to page 1 if current page is beyond available pages
+                const totalPages = Math.ceil(filteredMocks.length / itemsPerPage);
+                if (currentPage > totalPages && totalPages > 0) {
+                    currentPage = 1;
+                }
+                
+                // Get mocks for current page
+                const pageableMocks = getCurrentPageMocks();
+                
+                // Render the mocks
+                renderMockList(pageableMocks, mockTable);
+                
+                // Update pagination UI
+                updatePaginationUI();
+            }
+            
+            // Refresh mocks while preserving search and pagination state
+            async function refreshMocksWithState(showNotification = false) {
+                if (!mockTable) {
+                    mockTable = document.getElementById('mockTable');
+                }
+                try {
+                    const res = await fetch(`${API_PREFIX}/mocks`);
+                    const mocks = await res.json();
+                    
+                    // Store all mocks but preserve current search and pagination state
+                    allMocks = mocks;
+                    
+                    // Re-apply current search and pagination
+                    filterAndRenderMocks();
+                    
+                    if (showNotification && mocks.length > 0) {
+                        showNotification(`Loaded ${mocks.length} mock${mocks.length !== 1 ? 's' : ''}`, 'info', 2000);
+                    }
+                } catch (err) {
+                    mockTable.innerHTML = `<p class="text-center text-red-300">Error loading mocks: ${err.message}</p>`;
+                    showNotification(`Error loading mocks: ${err.message}`, 'error');
+                }
+            }
 
             // Global function to load placeholders
             async function loadPlaceholders() {
@@ -3720,11 +3887,16 @@
                 viewBtn.onclick = async () => {
                     await loadMocks();
                     modal.classList.remove('hidden');
+                    // Reset search when opening modal
+                    const searchInput = document.getElementById('mockSearch');
+                    if (searchInput) {
+                        searchInput.value = '';
+                    }
                 };
 
                 refreshBtn.onclick = async () => {
                     try {
-                        await loadMocks(false); // Don't show the built-in load notification
+                        await refreshMocksWithState(false);
                         showNotification('Mocks refreshed successfully', 'success', 2000);
                     } catch (error) {
                         showNotification('Failed to refresh mocks', 'error');
@@ -3741,6 +3913,137 @@
                         modal.classList.add('hidden');
                     }
                 });
+                
+                // Setup search and pagination event listeners
+                setupSearchAndPagination();
+            }
+            
+            function setupSearchAndPagination() {
+                // Search input handler
+                const searchInput = document.getElementById('mockSearch');
+                const clearSearchBtn = document.getElementById('clearSearch');
+                
+                // Debounced search function
+                function debouncedSearch(searchTerm) {
+                    // Clear any existing timer
+                    if (searchDebounceTimer) {
+                        clearTimeout(searchDebounceTimer);
+                    }
+                    
+                    // Set loading state
+                    isSearching = true;
+                    updateSearchLoadingState();
+                    
+                    // Set new timer
+                    searchDebounceTimer = setTimeout(() => {
+                        currentSearchTerm = searchTerm;
+                        currentPage = 1; // Reset to first page when searching
+                        filterAndRenderMocks();
+                        isSearching = false;
+                        updateSearchLoadingState();
+                        searchDebounceTimer = null;
+                    }, 300); // 300ms delay
+                }
+                
+                // Update search loading state
+                function updateSearchLoadingState() {
+                    const mockCount = document.getElementById('mockCount');
+                    if (isSearching && mockCount) {
+                        mockCount.textContent = 'Searching...';
+                        mockCount.classList.add('text-blue-300');
+                        mockCount.classList.remove('text-gray-300');
+                    } else if (mockCount) {
+                        mockCount.classList.remove('text-blue-300');
+                        mockCount.classList.add('text-gray-300');
+                    }
+                }
+                
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        const searchValue = e.target.value;
+                        
+                        // Show/hide clear button based on input
+                        if (clearSearchBtn) {
+                            if (searchValue.trim()) {
+                                clearSearchBtn.classList.remove('hidden');
+                            } else {
+                                clearSearchBtn.classList.add('hidden');
+                            }
+                        }
+                        
+                        // Use debounced search for better performance
+                        debouncedSearch(searchValue);
+                    });
+                    
+                    // Add keyboard shortcut (Escape to clear search)
+                    searchInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') {
+                            clearSearch();
+                        }
+                    });
+                }
+                
+                // Clear search button handler
+                if (clearSearchBtn) {
+                    clearSearchBtn.addEventListener('click', clearSearch);
+                }
+                
+                // Clear search function
+                function clearSearch() {
+                    if (searchInput) {
+                        // Clear any pending search debounce
+                        if (searchDebounceTimer) {
+                            clearTimeout(searchDebounceTimer);
+                            searchDebounceTimer = null;
+                        }
+                        
+                        isSearching = false;
+                        searchInput.value = '';
+                        currentSearchTerm = '';
+                        currentPage = 1;
+                        filterAndRenderMocks();
+                        updateSearchLoadingState();
+                        
+                        if (clearSearchBtn) {
+                            clearSearchBtn.classList.add('hidden');
+                        }
+                        
+                        // Focus back to search input for better UX
+                        searchInput.focus();
+                    }
+                }
+                
+                // ...existing code...
+                const prevBtn = document.getElementById('prevPage');
+                const nextBtn = document.getElementById('nextPage');
+                const itemsSelect = document.getElementById('itemsPerPage');
+                
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', () => {
+                        if (currentPage > 1) {
+                            currentPage--;
+                            filterAndRenderMocks();
+                        }
+                    });
+                }
+                
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => {
+                        const totalPages = Math.ceil(filteredMocks.length / itemsPerPage);
+                        if (currentPage < totalPages) {
+                            currentPage++;
+                            filterAndRenderMocks();
+                        }
+                    });
+                }
+                
+                if (itemsSelect) {
+                    itemsSelect.addEventListener('change', (e) => {
+                        itemsPerPage = parseInt(e.target.value);
+                        currentPage = 1; // Reset to first page when changing items per page
+                        filterAndRenderMocks();
+                    });
+                }
             }
 
             function renderMockList(mocks, container) {
@@ -3885,8 +4188,8 @@
                         if (res.ok) {
                             showNotification(`Mock "${mockName}" deleted successfully`, 'success');
                             closeModal();
-                            // Refresh the mock list automatically without showing load notification
-                            await loadMocks(false);
+                            // Refresh the mock list while preserving search and pagination state
+                            await refreshMocksWithState(false);
                         } else {
                             const error = await res.json();
                             showNotification(`Error: ${error.error}`, 'error');
@@ -3960,8 +4263,8 @@
                         if (res.ok) {
                             showNotification(`Mock "${name}" updated successfully`, 'success');
                             document.getElementById('editMockModal').classList.add('hidden');
-                            // Refresh the mock list automatically without showing load notification
-                            await loadMocks(false);
+                            // Refresh the mock list while preserving search and pagination state
+                            await refreshMocksWithState(false);
                         } else {
                             const error = await res.json();
                             showNotification(`Error updating mock: ${error.error}`, 'error');

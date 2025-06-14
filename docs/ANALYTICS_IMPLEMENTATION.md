@@ -180,7 +180,7 @@ node server/index.js
 ### Test Script
 A test script (`test-analytics.sh`) is provided to verify the implementation:
 ```bash
-./test-analytics.sh
+./tests/scripts/test-analytics.sh
 ```
 
 ### Manual Testing

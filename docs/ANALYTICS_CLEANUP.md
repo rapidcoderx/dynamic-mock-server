@@ -15,7 +15,7 @@ The cleanup utility can clean three types of analytics data:
 ### Interactive Mode (Recommended)
 
 ```bash
-./cleanup-analytics.sh
+./tests/scripts/cleanup-analytics.sh
 ```
 
 This will show a menu with common cleanup options:
@@ -32,19 +32,19 @@ This will show a menu with common cleanup options:
 
 ```bash
 # Clean all tables, keep last 30 days
-./cleanup-analytics.sh --days=30
+./tests/scripts/cleanup-analytics.sh --days=30
 
 # Dry run to see what would be deleted
-./cleanup-analytics.sh --dry-run --days=7
+./tests/scripts/cleanup-analytics.sh --dry-run --days=7
 
 # Clean only request history
-./cleanup-analytics.sh --table=request_history --days=14
+./tests/scripts/cleanup-analytics.sh --table=request_history --days=14
 
 # Reset mock hit counts instead of deleting
-./cleanup-analytics.sh --reset-hits
+./tests/scripts/cleanup-analytics.sh --reset-hits
 
 # Direct Node.js usage
-node cleanup-analytics.js --days=30 --dry-run
+node ./tests/scripts/cleanup-analytics.js --days=30 --dry-run
 ```
 
 ## Options

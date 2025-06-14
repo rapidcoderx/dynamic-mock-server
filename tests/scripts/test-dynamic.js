@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const dynamicResponse = require('./utils/dynamicResponse.js');
+const dynamicResponse = require('../../utils/dynamicResponse.js');
 
 // Test the problematic cases
 async function testDynamicValues() {
