@@ -1,6 +1,7 @@
 # 🌊 Dynamic Mock Server
 
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-blue)
 ![Features](https://img.shields.io/badge/Features-Dynamic%20Values%20%26%20Delays-blue)
 ![UI](https://img.shields.io/badge/UI-Liquid%20Glass%20Theme-purple)
 ![Integration](https://img.shields.io/badge/Export-JSON%20%7C%20Postman%20%7C%20HTTPie-orange)
@@ -164,6 +165,7 @@ A sleek, modern mock server with a liquid-glass UI and dynamic API capabilities.
   └── setup-database.sh       # Interactive database setup script
 
 /.env.example                 # Environment configuration template
+/LICENSE                      # MIT License file
 ```
 
 ---
@@ -817,6 +819,10 @@ Configure realistic network delays in Advanced Options:
 - **Architecture**: RESTful API with modular route handlers
 - **UI Framework**: Custom liquid glass design system
 - **Build Tools**: Tailwind CSS CLI for optimized styling
+
+## 🙏 Acknowledgments
+
+This project was developed with the assistance of **GitHub Copilot** and **VS Code**, which provided intelligent code suggestions, helped with documentation, and accelerated the development process. Special thanks to the AI-powered development tools that made this weekend project both productive and enjoyable!
 
 ## 🤝 Contributing
 

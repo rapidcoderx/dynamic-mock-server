@@ -72,7 +72,8 @@ const requiredFiles = [
     'scripts/setup-database.sh',
     'sql/emergency-analytics-cleanup.sql',
     'docs/OPENTELEMETRY_METRICS.md',
-    '.env.example'
+    '.env.example',
+    'LICENSE'
 ];
 
 let allFilesExist = true;
