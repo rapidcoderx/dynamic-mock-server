@@ -5,6 +5,8 @@ const path = require('path');
 const { applySecurity } = require('./security');
 const logger = require('./logger');
 const { router: mockRoutes, mockStore } = require('./routes/mockRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+const { trackRequest } = require('./middleware/analytics');
 const { findMock } = require('../utils/matcher');
 const { loadMocks, closeStorage, getStorageInfo } = require('../utils/storageStrategy');
 const dynamicResponse = require('../utils/dynamicResponse');
@@ -30,6 +32,9 @@ async function startServer() {
     app.use(express.json());
     app.use(cors());
     applySecurity(app);
+    
+    // Add analytics tracking middleware
+    app.use(trackRequest);
 
     // Load mocks from configured storage
     try {
@@ -59,6 +64,7 @@ async function startServer() {
     });
 
     app.use(`${API_PREFIX}/mocks`, mockRoutes);
+    app.use(`${API_PREFIX}/analytics`, analyticsRoutes);
 
     app.get(`${API_PREFIX}/config`, (req, res) => {
         const storageInfo = getStorageInfo();
@@ -74,6 +80,7 @@ app.use(async (req, res, next) => {
         `${API_PREFIX}/health`,
         `${API_PREFIX}/config`,
         `${API_PREFIX}/mocks`,
+        `${API_PREFIX}/analytics`,
     ];
 
     if (skipPaths.some(p => req.path.startsWith(p))) return next();
@@ -106,7 +113,9 @@ app.use(async (req, res, next) => {
                 });
             }
             
-            // Add metadata headers for debugging
+            // Add metadata headers for debugging and analytics
+            res.set('X-Mock-Id', mock.id);
+            res.set('X-Mock-Name', mock.name);
             if (metadata.dynamicValues) {
                 res.set('X-Mock-Dynamic', 'true');
             }
